@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -16,8 +16,10 @@ import { ZoneEditor } from "@/components/ZoneEditor";
 import { DocumentUploader } from "@/components/DocumentUploader";
 import { DocumentList } from "@/components/DocumentList";
 import { api } from "@/lib/api";
-import { Project, ProjectStatus, ProjectDocument } from "@/lib/types";
+import { ListingType, Project, ProjectStatus, ProjectDocument } from "@/lib/types";
 import { fmtCurrency } from "@/lib/format";
+import { VideoPlayer } from "@/components/VideoPlayer";
+import { useAuth } from "@/providers/AuthProvider";
 
 type ProjectWithRound = Project & { round?: any };
 
@@ -27,7 +29,10 @@ export default function DevPanel() {
   const tMessages = useTranslations("messages");
   const tStatus = useTranslations("status");
   const tVal = useTranslations("dev.validation");
+  const tProject = useTranslations("project");
   const locale = useLocale();
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const { show } = useToast();
   const [devId] = useState("d1");
   const [view, setView] = useState<"list" | "create" | "edit">("list");
@@ -44,6 +49,7 @@ export default function DevPanel() {
   const [pCountry, setPCountry] = useState("MX");
   const [pCurrency, setPCurrency] = useState<"USD"|"MXN">("USD");
   const [pDesc, setPDesc] = useState("");
+  const [pListingType, setPListingType] = useState<ListingType>("presale");
   const [pImages, setPImages] = useState<string[]>([]);
   const [pVideoUrl, setPVideoUrl] = useState("");
   const [pTotalUnits, setPTotalUnits] = useState<number | "">("");
@@ -67,6 +73,18 @@ export default function DevPanel() {
     parkingSpaces?: number;
     floors?: number;
   }>({});
+
+  const videoUrlPreview = pVideoUrl.trim();
+
+  const handleListingTypeChange = (value: ListingType) => {
+    setPListingType(value);
+    if (value === "sale") {
+      setErrors(prev => {
+        const { goalValue, deposit, slotsPerPerson, deadlineDays, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
 
   // Ronda
   const [goalType, setGoalType] = useState<"reservations"|"amount">("reservations");
@@ -95,6 +113,81 @@ export default function DevPanel() {
   useEffect(() => {
     if (view === "list") loadProjects();
   }, [view]);
+
+  // Estado para timeout de carga
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Timeout de seguridad: si después de 3 segundos aún está cargando, mostrar contenido
+  useEffect(() => {
+    if (authLoading) {
+      const timeout = setTimeout(() => {
+        console.warn('[DevPanel] Loading timeout reached, showing content anyway');
+        setLoadingTimeout(true);
+      }, 3000);
+      return () => clearTimeout(timeout);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [authLoading]);
+
+  // Validar autenticación solo después de que termine la carga o timeout
+  useEffect(() => {
+    // Solo ejecutar validación después de que authLoading termine completamente o timeout
+    if (authLoading && !loadingTimeout) return;
+    
+    // Si terminó de cargar (o timeout) y no hay usuario, redirigir
+    if (!user) {
+      router.replace('/sign-up');
+    }
+  }, [user, authLoading, loadingTimeout, router]);
+
+  // Mostrar estado de carga mientras se verifica la sesión (con timeout)
+  if (authLoading && !loadingTimeout) {
+    return (
+      <div className="container py-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto mb-4"></div>
+          <p className="text-neutral-600">Verificando sesión...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Solo mostrar mensaje de "no autenticado" después de confirmar que realmente no hay usuario
+  if (!user) {
+    return (
+      <div className="container py-8">
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-lg text-neutral-600">
+              Debes iniciar sesión para acceder a este panel.
+            </p>
+            <Link href="/sign-up">
+              <Button className="mt-4">Iniciar Sesión</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Mostrar advertencia si no es developer
+  const isDeveloper = user.role === 'developer';
+
+  // Banner de advertencia si no es developer
+  const RoleWarningBanner = () => {
+    if (isDeveloper) return null;
+    return (
+      <Card className="mb-6 border-yellow-300 bg-yellow-50">
+        <CardContent className="py-4">
+          <p className="text-sm text-yellow-800">
+            <strong>Advertencia:</strong> Tu cuenta no tiene rol de desarrollador. 
+            Puedes crear proyectos temporalmente, pero contacta al administrador para obtener permisos completos.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const loadDocuments = async (projectId: string) => {
     if (!projectId) return;
@@ -125,12 +218,13 @@ export default function DevPanel() {
     }
   };
 
-  const resetForm = () => {
+  const resetForm = (initialListingType: ListingType = "presale") => {
     setPName("");
     setPCity("CDMX");
     setPCountry("MX");
     setPCurrency("USD");
     setPDesc("");
+    setPListingType(initialListingType);
     setPImages([]);
     setPVideoUrl("");
     setPTotalUnits("");
@@ -158,6 +252,7 @@ export default function DevPanel() {
     setPCountry(project.country);
     setPCurrency(project.currency);
     setPDesc(project.description);
+    setPListingType(project.listingType || "presale");
     setPImages(project.images || []);
     setPVideoUrl(project.videoUrl || "");
     setPTotalUnits(project.totalUnits || "");
@@ -165,7 +260,11 @@ export default function DevPanel() {
     setPSpecs(project.specs || {});
     setPZone(project.zone || {});
     setPPropertyType(project.propertyType || "");
-    setPPropertyPrice(project.propertyPrice || "");
+    if (project.listingType === "sale") {
+      setPPropertyPrice(project.askingPrice ?? project.propertyPrice ?? "");
+    } else {
+      setPPropertyPrice(project.propertyPrice || "");
+    }
     setPDevelopmentStage(project.developmentStage || "");
     setPPropertyDetails(project.propertyDetails || {});
     
@@ -184,6 +283,11 @@ export default function DevPanel() {
     setView("edit");
   };
 
+  const startCreate = (type: ListingType) => {
+    resetForm(type);
+    setView("create");
+  };
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     
@@ -192,10 +296,12 @@ export default function DevPanel() {
     if (!pCountry.trim()) newErrors.country = tVal("countryRequired");
     if (!pDesc.trim()) newErrors.description = tVal("descriptionRequired");
     if (pImages.length === 0) newErrors.images = tVal("imagesRequired");
-    if (goalValue <= 0) newErrors.goalValue = tVal("goalValueRequired");
-    if (deposit <= 0) newErrors.deposit = tVal("depositRequired");
-    if (slotsPerPerson <= 0) newErrors.slotsPerPerson = tVal("slotsPerPersonRequired");
-    if (deadlineDays <= 0) newErrors.deadlineDays = tVal("deadlineDaysRequired");
+    if (pListingType === "presale") {
+      if (goalValue <= 0) newErrors.goalValue = tVal("goalValueRequired");
+      if (deposit <= 0) newErrors.deposit = tVal("depositRequired");
+      if (slotsPerPerson <= 0) newErrors.slotsPerPerson = tVal("slotsPerPersonRequired");
+      if (deadlineDays <= 0) newErrors.deadlineDays = tVal("deadlineDaysRequired");
+    }
     
     // Validaciones opcionales pero con formato correcto
     if (pTotalUnits !== "" && (typeof pTotalUnits !== "number" || pTotalUnits <= 0)) {
@@ -235,8 +341,16 @@ export default function DevPanel() {
             propertyType: pPropertyType.trim() || undefined,
             propertyPrice: pPropertyPrice ? Number(pPropertyPrice) : undefined,
             developmentStage: pDevelopmentStage.trim() || undefined,
-            propertyDetails: Object.keys(pPropertyDetails).length > 0 ? pPropertyDetails : undefined
+            propertyDetails: Object.keys(pPropertyDetails).length > 0 ? pPropertyDetails : undefined,
+            listingType: pListingType
           };
+
+          if (pListingType === "sale") {
+            projectData.availabilityStatus = "available";
+            projectData.askingPrice = pPropertyPrice ? Number(pPropertyPrice) : undefined;
+          } else {
+            projectData.askingPrice = undefined;
+          }
 
       if (editingProject) {
         // Actualizar proyecto existente
@@ -254,6 +368,7 @@ export default function DevPanel() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...projectData,
+            listingType: pListingType,
             developerId: devId
           })
         }).then(r => r.json());
@@ -263,7 +378,7 @@ export default function DevPanel() {
       }
 
       // Crear/actualizar ronda solo si no existe o si estamos editando
-      if (!editingProject?.round || editingProject) {
+      if (pListingType === "presale") {
         const roundData: any = {
           projectId,
           goalType,
@@ -285,7 +400,13 @@ export default function DevPanel() {
         if (!round.ok) throw new Error(round.error);
       }
       
-      show(editingProject ? t("messages.projectUpdated") : t("messages.projectCreated"), tMessages("success"));
+      const successMessage = editingProject
+        ? t("messages.projectUpdated")
+        : pListingType === "presale"
+          ? t("messages.projectCreated")
+          : t("messages.projectCreatedSale");
+
+      show(successMessage, tMessages("success"));
       
       resetForm();
       setView("list");
@@ -308,67 +429,159 @@ export default function DevPanel() {
   };
 
   if (view === "list") {
+    const presaleProjects = projects.filter(project => project.listingType !== "sale");
+    const saleProjects = projects.filter(project => project.listingType === "sale");
+
+    const renderProjectCard = (project: ProjectWithRound) => {
+      const isPresale = project.listingType !== "sale";
+      const salePrice = project.askingPrice ?? project.propertyPrice;
+      let availability: string | undefined;
+      if (project.availabilityStatus) {
+        try {
+          availability = tProject(`availability.${project.availabilityStatus}` as const);
+        } catch {
+          availability = project.availabilityStatus;
+        }
+      }
+
+      return (
+        <Card key={project.id}>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex-1 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="font-medium text-lg">{project.name}</div>
+                <Badge color={isPresale ? "green" : "neutral"}>
+                  {t(`listingType.${isPresale ? "presale" : "sale"}`)}
+                </Badge>
+                {getStatusBadge(project.status)}
+              </div>
+              <div className="text-sm text-neutral-600">
+                {project.city}, {project.country} • {project.currency}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={() => startEdit(project)} variant="secondary" size="sm">
+                {tCommon("edit")}
+              </Button>
+              <Link
+                href={`/p/${project.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-brand hover:underline flex items-center"
+              >
+                {t("round.view")}
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-neutral-700">{project.description}</p>
+            {isPresale ? (
+              project.round ? (
+                <div className="text-sm text-neutral-600">
+                  {t("round.round")}: {project.round.goalType === "reservations"
+                    ? `${project.round.goalValue} ${t("goalTypes.reservations").toLowerCase()}`
+                    : fmtCurrency(project.round.goalValue, project.currency, locale)} • {t("round.deposit")}: {fmtCurrency(project.round.depositAmount, project.currency, locale)}
+                </div>
+              ) : (
+                <div className="text-sm text-neutral-500">{t("round.noRound")}</div>
+              )
+            ) : (
+              <div className="text-sm text-neutral-600 space-y-1">
+                {salePrice ? (
+                  <div>{t("sections.salePrice", { price: fmtCurrency(salePrice, project.currency, locale) })}</div>
+                ) : (
+                  <div className="text-neutral-500">{t("sections.saleMissingPrice")}</div>
+                )}
+                {availability && (
+                  <div>{t("sections.saleAvailability", { status: availability })}</div>
+                )}
+                {project.propertyType && (
+                  <div>{t("sections.saleType", { type: project.propertyType })}</div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      );
+    };
+
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl">{t("title")}</h1>
-          <Button onClick={() => { resetForm(); setView("create"); }}>
-            {t("newProject")}
-          </Button>
+      <div className="container py-8 space-y-6">
+        <RoleWarningBanner />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl">{t("title")}</h1>
+            <p className="text-sm text-neutral-600">{t("listDescription")}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => startCreate("presale")}>
+              {t("newPresale")}
+            </Button>
+            <Button onClick={() => startCreate("sale")} variant="secondary">
+              {t("newSale")}
+            </Button>
+          </div>
         </div>
 
         {loading ? (
           <p className="text-sm text-neutral-600">{tCommon("loading")}</p>
         ) : projects.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center">
-              <p className="text-neutral-600 mb-4">{t("noProjects")}</p>
-              <Button onClick={() => { resetForm(); setView("create"); }}>
-                {t("createFirstProject")}
-              </Button>
+            <CardContent className="py-8 text-center space-y-4">
+              <p className="text-neutral-600">{t("noProjects")}</p>
+              <div className="flex flex-col sm:flex-row sm:justify-center gap-2">
+                <Button onClick={() => startCreate("presale")}>
+                  {t("newPresale")}
+                </Button>
+                <Button onClick={() => startCreate("sale")} variant="secondary">
+                  {t("newSale")}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
-            {projects.map((p: any) => (
-              <Card key={p.id}>
-                <CardHeader className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <div className="font-medium text-lg">{p.name}</div>
-                      {getStatusBadge(p.status)}
-                    </div>
-                    <div className="text-sm text-neutral-600 mt-1">
-                      {p.city}, {p.country} • {p.currency}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={() => startEdit(p)} variant="secondary" size="sm">
-                      {tCommon("edit")}
+          <div className="space-y-8">
+            <section className="space-y-4">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-xl font-semibold">{t("sections.presaleHeading")}</h2>
+                <p className="text-sm text-neutral-600">{t("sections.presaleSubheading")}</p>
+              </div>
+              {presaleProjects.length === 0 ? (
+                <Card>
+                  <CardContent className="py-6 text-center space-y-3">
+                    <p className="text-neutral-600">{t("sections.noPresale")}</p>
+                    <Button onClick={() => startCreate("presale")} size="sm">
+                      {t("newPresale")}
                     </Button>
-                    <Link 
-                      href={`/p/${p.slug}`} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="text-sm text-brand hover:underline flex items-center"
-                    >
-                      {t("round.view")}
-                    </Link>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-neutral-700 mb-3">{p.description}</p>
-                  {p.round ? (
-                    <div className="text-sm text-neutral-600">
-                      {t("round.round")}: {p.round.goalType === "reservations" ? `${p.round.goalValue} ${t("goalTypes.reservations").toLowerCase()}` : fmtCurrency(p.round.goalValue, p.currency, locale)} • 
-                      {t("round.deposit")}: {fmtCurrency(p.round.depositAmount, p.currency, locale)}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-neutral-500">{t("round.noRound")}</div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {presaleProjects.map(renderProjectCard)}
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-4">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-xl font-semibold">{t("sections.saleHeading")}</h2>
+                <p className="text-sm text-neutral-600">{t("sections.saleSubheading")}</p>
+              </div>
+              {saleProjects.length === 0 ? (
+                <Card>
+                  <CardContent className="py-6 text-center space-y-3">
+                    <p className="text-neutral-600">{t("sections.noSale")}</p>
+                    <Button onClick={() => startCreate("sale")} size="sm" variant="secondary">
+                      {t("newSale")}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {saleProjects.map(renderProjectCard)}
+                </div>
+              )}
+            </section>
           </div>
         )}
       </div>
@@ -376,7 +589,8 @@ export default function DevPanel() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container py-8 space-y-6">
+      <RoleWarningBanner />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl">{editingProject ? t("editProject") : t("createProject")}</h1>
         <Button variant="secondary" onClick={() => { resetForm(); setView("list"); }}>
@@ -423,6 +637,15 @@ export default function DevPanel() {
             {errors.description && <p className="text-xs text-red-600 mt-1">{errors.description}</p>}
           </div>
 
+          <div>
+            <label className="text-sm font-medium">{t("fields.listingType")}</label>
+            <Select value={pListingType} onChange={e => handleListingTypeChange(e.target.value as ListingType)}>
+              <option value="presale">{t("listingType.presale")}</option>
+              <option value="sale">{t("listingType.sale")}</option>
+            </Select>
+            <p className="text-xs text-neutral-500 mt-1">{t(`listingTypeHelp.${pListingType}`)}</p>
+          </div>
+
           <ImageUploader images={pImages} onChange={(imgs) => { setPImages(imgs); setErrors({...errors, images: ""}); }} />
           {errors.images && <p className="text-xs text-red-600">{errors.images}</p>}
 
@@ -435,6 +658,11 @@ export default function DevPanel() {
               onChange={e => setPVideoUrl(e.target.value)}
             />
             <p className="text-xs text-neutral-500 mt-1">{t("fields.videoUrlHelp")}</p>
+            {videoUrlPreview ? (
+              <div className="mt-3">
+                <VideoPlayer url={videoUrlPreview} />
+              </div>
+            ) : null}
           </div>
 
           <hr className="my-4"/>
@@ -442,35 +670,35 @@ export default function DevPanel() {
           <h3 className="font-medium text-lg">{t("financialInfo")}</h3>
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium">Unidades totales</label>
+              <label className="text-sm font-medium">{t("fields.totalUnits")}</label>
               <Input
                 type="number"
                 min="1"
-                placeholder="Ej: 120"
+                placeholder={t("fields.totalUnitsPlaceholder")}
                 value={pTotalUnits}
                 onChange={e => setPTotalUnits(e.target.value ? parseInt(e.target.value, 10) : "")}
               />
-              <p className="text-xs text-neutral-500 mt-1">Número total de unidades del desarrollo</p>
+              <p className="text-xs text-neutral-500 mt-1">{t("fields.totalUnitsHelp")}</p>
             </div>
             <div>
-              <label className="text-sm font-medium">Tipo de propiedad</label>
+              <label className="text-sm font-medium">{t("fields.propertyType")}</label>
               <Select
                 value={pPropertyType}
                 onChange={e => setPPropertyType(e.target.value)}
               >
-                <option value="">Seleccionar...</option>
-                <option value="Departamentos">Departamentos</option>
-                <option value="Casas">Casas</option>
-                <option value="Lotes">Lotes</option>
-                <option value="Villa">Villa</option>
-                <option value="Townhouses">Townhouses</option>
-                <option value="Condominios">Condominios</option>
-                <option value="Otro">Otro</option>
+                <option value="">{t("fields.propertyTypeSelect")}</option>
+                <option value="Departamentos">{t("propertyTypes.apartments")}</option>
+                <option value="Casas">{t("propertyTypes.houses")}</option>
+                <option value="Lotes">{t("propertyTypes.lots")}</option>
+                <option value="Villa">{t("propertyTypes.villa")}</option>
+                <option value="Townhouses">{t("propertyTypes.townhouses")}</option>
+                <option value="Condominios">{t("propertyTypes.condos")}</option>
+                <option value="Otro">{t("propertyTypes.other")}</option>
               </Select>
               {pPropertyType === "Otro" && (
                 <Input
                   type="text"
-                  placeholder="Especificar tipo de propiedad"
+                  placeholder={t("fields.propertyTypeOther")}
                   value={pPropertyType}
                   onChange={e => setPPropertyType(e.target.value)}
                   className="mt-2"
@@ -478,35 +706,35 @@ export default function DevPanel() {
               )}
             </div>
             <div>
-              <label className="text-sm font-medium">Costo de la propiedad ({pCurrency})</label>
+              <label className="text-sm font-medium">{t("fields.propertyPrice", { currency: pCurrency })}</label>
               <Input
                 type="number"
                 min="0"
                 step="0.01"
-                placeholder="Ej: 250000"
+                placeholder={t("fields.propertyPricePlaceholder")}
                 value={pPropertyPrice}
                 onChange={e => setPPropertyPrice(e.target.value ? parseFloat(e.target.value) : "")}
               />
-              <p className="text-xs text-neutral-500 mt-1">Precio por unidad/propiedad</p>
+              <p className="text-xs text-neutral-500 mt-1">{t("fields.propertyPriceHelp")}</p>
             </div>
             <div>
-              <label className="text-sm font-medium">Etapa de desarrollo</label>
+              <label className="text-sm font-medium">{t("fields.developmentStage")}</label>
               <Select
                 value={pDevelopmentStage}
                 onChange={e => setPDevelopmentStage(e.target.value)}
               >
-                <option value="">Seleccionar...</option>
-                <option value="Preventa">Preventa</option>
-                <option value="Pre-construcción">Pre-construcción</option>
-                <option value="Construcción">Construcción</option>
-                <option value="Entrega">Entrega</option>
-                <option value="Post-entrega">Post-entrega</option>
-                <option value="Otro">Otro</option>
+                <option value="">{t("fields.developmentStageSelect")}</option>
+                <option value="Preventa">{t("stages.presale")}</option>
+                <option value="Pre-construcción">{t("stages.preConstruction")}</option>
+                <option value="Construcción">{t("stages.construction")}</option>
+                <option value="Entrega">{t("stages.delivery")}</option>
+                <option value="Post-entrega">{t("stages.postDelivery")}</option>
+                <option value="Otro">{t("stages.other")}</option>
               </Select>
               {pDevelopmentStage === "Otro" && (
                 <Input
                   type="text"
-                  placeholder="Especificar etapa"
+                  placeholder={t("fields.developmentStageOther")}
                   value={pDevelopmentStage}
                   onChange={e => setPDevelopmentStage(e.target.value)}
                   className="mt-2"
@@ -517,14 +745,14 @@ export default function DevPanel() {
 
           <hr className="my-4"/>
 
-          <h3 className="font-medium text-lg">Detalles de la propiedad (opcional)</h3>
+          <h3 className="font-medium text-lg">{t("propertyDetails")}</h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label className="text-sm font-medium">Recámaras</label>
+              <label className="text-sm font-medium">{t("fields.bedrooms")}</label>
               <Input
                 type="number"
                 min="0"
-                placeholder="Ej: 3"
+                placeholder={t("fields.bedroomsPlaceholder")}
                 value={pPropertyDetails.bedrooms || ""}
                 onChange={e => setPPropertyDetails({
                   ...pPropertyDetails,
@@ -533,11 +761,11 @@ export default function DevPanel() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Baños completos</label>
+              <label className="text-sm font-medium">{t("fields.bathrooms")}</label>
               <Input
                 type="number"
                 min="0"
-                placeholder="Ej: 2"
+                placeholder={t("fields.bathroomsPlaceholder")}
                 value={pPropertyDetails.bathrooms || ""}
                 onChange={e => setPPropertyDetails({
                   ...pPropertyDetails,
@@ -546,11 +774,11 @@ export default function DevPanel() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Medios baños</label>
+              <label className="text-sm font-medium">{t("fields.halfBathrooms")}</label>
               <Input
                 type="number"
                 min="0"
-                placeholder="Ej: 1"
+                placeholder={t("fields.halfBathroomsPlaceholder")}
                 value={pPropertyDetails.halfBathrooms || ""}
                 onChange={e => setPPropertyDetails({
                   ...pPropertyDetails,
@@ -559,12 +787,12 @@ export default function DevPanel() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Superficie (m²)</label>
+              <label className="text-sm font-medium">{t("fields.surfaceArea")}</label>
               <Input
                 type="number"
                 min="0"
                 step="0.01"
-                placeholder="Ej: 120.5"
+                placeholder={t("fields.surfaceAreaPlaceholder")}
                 value={pPropertyDetails.surfaceArea || ""}
                 onChange={e => setPPropertyDetails({
                   ...pPropertyDetails,
@@ -573,11 +801,11 @@ export default function DevPanel() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Estacionamientos</label>
+              <label className="text-sm font-medium">{t("fields.parkingSpaces")}</label>
               <Input
                 type="number"
                 min="0"
-                placeholder="Ej: 2"
+                placeholder={t("fields.parkingSpacesPlaceholder")}
                 value={pPropertyDetails.parkingSpaces || ""}
                 onChange={e => setPPropertyDetails({
                   ...pPropertyDetails,
@@ -586,11 +814,11 @@ export default function DevPanel() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Niveles/Pisos</label>
+              <label className="text-sm font-medium">{t("fields.floors")}</label>
               <Input
                 type="number"
                 min="0"
-                placeholder="Ej: 2"
+                placeholder={t("fields.floorsPlaceholder")}
                 value={pPropertyDetails.floors || ""}
                 onChange={e => setPPropertyDetails({
                   ...pPropertyDetails,
@@ -612,83 +840,98 @@ export default function DevPanel() {
 
           <ZoneEditor zone={pZone} onChange={setPZone} />
 
-          <hr className="my-4"/>
-          
-          <h3 className="font-medium text-lg">Ronda de preventa</h3>
-          <div className="grid sm:grid-cols-3 gap-3">
-            <div>
-              <label className="text-sm font-medium">Tipo meta</label>
-              <Select value={goalType} onChange={e => setGoalType(e.target.value as any)}>
-                <option value="reservations">Reservas</option>
-                <option value="amount">Monto</option>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Valor meta *</label>
-              <Input
-                type="number"
-                min="1"
-                value={goalValue}
-                onChange={e => { setGoalValue(parseInt(e.target.value || "0", 10)); setErrors({...errors, goalValue: ""}); }}
-              />
-              {errors.goalValue && <p className="text-xs text-red-600 mt-1">{errors.goalValue}</p>}
-            </div>
-            <div>
-              <label className="text-sm font-medium">Depósito por slot *</label>
-              <Input
-                type="number"
-                min="1"
-                value={deposit}
-                onChange={e => { setDeposit(parseInt(e.target.value || "0", 10)); setErrors({...errors, deposit: ""}); }}
-              />
-              {errors.deposit && <p className="text-xs text-red-600 mt-1">{errors.deposit}</p>}
-            </div>
-            <div>
-              <label className="text-sm font-medium">Slots por persona *</label>
-              <Input
-                type="number"
-                min="1"
-                value={slotsPerPerson}
-                onChange={e => { setSlotsPerPerson(parseInt(e.target.value || "1", 10)); setErrors({...errors, slotsPerPerson: ""}); }}
-              />
-              {errors.slotsPerPerson && <p className="text-xs text-red-600 mt-1">{errors.slotsPerPerson}</p>}
-            </div>
-            <div>
-              <label className="text-sm font-medium">Días hasta fecha límite *</label>
-              <Input
-                type="number"
-                min="1"
-                value={deadlineDays}
-                onChange={e => { setDeadlineDays(parseInt(e.target.value || "14", 10)); setErrors({...errors, deadlineDays: ""}); }}
-              />
-              {errors.deadlineDays && <p className="text-xs text-red-600 mt-1">{errors.deadlineDays}</p>}
-            </div>
-            <div>
-              <label className="text-sm font-medium">Regla</label>
-              <Select value={rule} onChange={e => setRule(e.target.value as any)}>
-                <option value="all_or_nothing">Todo o nada</option>
-                <option value="partial">Parcial (≥70%)</option>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Grupo de preventa (opcional)</label>
-              <Input
-                type="number"
-                min="1"
-                placeholder="Ej: 30"
-                value={groupSlots}
-                onChange={e => setGroupSlots(e.target.value ? parseInt(e.target.value, 10) : "")}
-              />
-              <p className="text-xs text-neutral-500 mt-1">Tamaño del grupo de preventa (slots)</p>
-            </div>
-          </div>
+          {pListingType === "presale" ? (
+            <>
+              <hr className="my-4"/>
+
+              <h3 className="font-medium text-lg">{t("roundInfo")}</h3>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-sm font-medium">{t("fields.goalType")}</label>
+                  <Select value={goalType} onChange={e => setGoalType(e.target.value as any)}>
+                    <option value="reservations">{t("goalTypes.reservations")}</option>
+                    <option value="amount">{t("goalTypes.amount")}</option>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">{t("fields.goalValue")}</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={goalValue}
+                    onChange={e => { setGoalValue(parseInt(e.target.value || "0", 10)); setErrors({...errors, goalValue: ""}); }}
+                  />
+                  {errors.goalValue && <p className="text-xs text-red-600 mt-1">{errors.goalValue}</p>}
+                </div>
+                <div>
+                  <label className="text-sm font-medium">{t("fields.depositAmount")}</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={deposit}
+                    onChange={e => { setDeposit(parseInt(e.target.value || "0", 10)); setErrors({...errors, deposit: ""}); }}
+                  />
+                  {errors.deposit && <p className="text-xs text-red-600 mt-1">{errors.deposit}</p>}
+                </div>
+                <div>
+                  <label className="text-sm font-medium">{t("fields.slotsPerPerson")}</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={slotsPerPerson}
+                    onChange={e => { setSlotsPerPerson(parseInt(e.target.value || "1", 10)); setErrors({...errors, slotsPerPerson: ""}); }}
+                  />
+                  {errors.slotsPerPerson && <p className="text-xs text-red-600 mt-1">{errors.slotsPerPerson}</p>}
+                </div>
+                <div>
+                  <label className="text-sm font-medium">{t("fields.deadlineDays")}</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={deadlineDays}
+                    onChange={e => { setDeadlineDays(parseInt(e.target.value || "14", 10)); setErrors({...errors, deadlineDays: ""}); }}
+                  />
+                  {errors.deadlineDays && <p className="text-xs text-red-600 mt-1">{errors.deadlineDays}</p>}
+                </div>
+                <div>
+                  <label className="text-sm font-medium">{t("fields.rule")}</label>
+                  <Select value={rule} onChange={e => setRule(e.target.value as any)}>
+                    <option value="all_or_nothing">{t("rules.allOrNothing")}</option>
+                    <option value="partial">{t("rules.partial")}</option>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">{t("fields.groupSlots")}</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder={t("fields.groupSlotsPlaceholder")}
+                    value={groupSlots}
+                    onChange={e => setGroupSlots(e.target.value ? parseInt(e.target.value, 10) : "")}
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">{t("fields.groupSlotsHelp")}</p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <hr className="my-4"/>
+              <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600">
+                {t("saleInfo")}
+              </div>
+            </>
+          )}
           
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="secondary" onClick={() => { resetForm(); setView("list"); }}>
               {tCommon("cancel")}
             </Button>
             <Button onClick={submit} disabled={loading}>
-              {loading ? t("messages.saving") : editingProject ? t("messages.updateProject") : t("messages.createProjectAndRound")}
+              {loading
+                ? t("messages.saving")
+                : editingProject
+                  ? t("messages.updateProject")
+                  : t(pListingType === "presale" ? "messages.createProjectAndRound" : "messages.createSaleProject")}
             </Button>
           </div>
         </CardContent>

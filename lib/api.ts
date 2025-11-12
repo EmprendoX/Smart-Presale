@@ -1,4 +1,13 @@
-import { ApiResult, Project, Reservation, Round } from "./types";
+import {
+  ApiResult,
+  Project,
+  Reservation,
+  Round,
+  AutomationWorkflow,
+  IntelligentAgent,
+  Community,
+  TransactionProvider
+} from "./types";
 
 const json = (res: Response) => res.json();
 
@@ -27,7 +36,7 @@ export const api = {
 
   // Reservas
   createReservation: async (input: {
-    roundId: string; userId: string; slots: number; kyc: { fullName: string; country: string; phone: string; idNumber?: string }
+    roundId: string; slots: number; kyc: { fullName: string; country: string; phone: string; idNumber?: string }
   }): Promise<ApiResult<Reservation>> =>
     fetch("/api/reservations", { 
       method: "POST", 
@@ -39,26 +48,79 @@ export const api = {
     fetch(`/api/reservations?userId=${encodeURIComponent(userId)}`, { cache: "no-store" }).then(json),
 
   refundReservation: async (id: string): Promise<ApiResult<Reservation>> =>
-    fetch(`/api/reservations/${id}/refund`, { 
+    fetch(`/api/reservations/${id}/refund`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     }).then(json),
 
   // Pago simulado
-  checkout: async (reservationId: string): Promise<ApiResult<{ txId: string }>> =>
-    fetch("/api/checkout", { 
-      method: "POST", 
+  checkout: async (
+    reservationId: string
+  ): Promise<
+    ApiResult<{
+      transactionId: string;
+      reservationStatus: Reservation["status"];
+      clientSecret?: string | null;
+      provider: TransactionProvider;
+      nextAction?: string | null;
+    }>
+  > =>
+    fetch("/api/checkout", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reservationId }) 
+      body: JSON.stringify({ reservationId })
     }).then(json),
 
   // Cierre de ronda (simulado)
   closeRound: async (roundId: string): Promise<ApiResult<{ status: string }>> =>
-    fetch("/api/close-round", { 
-      method: "POST", 
+    fetch("/api/close-round", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ roundId }) 
-    }).then(json)
+      body: JSON.stringify({ roundId })
+    }).then(json),
+
+  // Automations
+  listAutomations: async (): Promise<ApiResult<AutomationWorkflow[]>> =>
+    fetch("/api/automations", { cache: "no-store" }).then(json),
+
+  createAutomation: async (payload: Partial<AutomationWorkflow>): Promise<ApiResult<AutomationWorkflow>> =>
+    fetch("/api/automations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(json),
+
+  updateAutomation: async (id: string, payload: Partial<AutomationWorkflow>): Promise<ApiResult<AutomationWorkflow>> =>
+    fetch(`/api/automations/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(json),
+
+  // Agents
+  listAgents: async (): Promise<ApiResult<IntelligentAgent[]>> =>
+    fetch("/api/agents", { cache: "no-store" }).then(json),
+
+  createAgent: async (payload: Partial<IntelligentAgent>): Promise<ApiResult<IntelligentAgent>> =>
+    fetch("/api/agents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(json),
+
+  updateAgent: async (id: string, payload: Partial<IntelligentAgent>): Promise<ApiResult<IntelligentAgent>> =>
+    fetch(`/api/agents/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(json),
+
+  // Communities
+  listCommunities: async (): Promise<ApiResult<Community[]>> =>
+    fetch("/api/communities", { cache: "no-store" }).then(json),
+
+  getCommunity: async (slug: string): Promise<ApiResult<Community>> =>
+    fetch(`/api/communities/${slug}`, { cache: "no-store" }).then(json)
 };
 
 /**

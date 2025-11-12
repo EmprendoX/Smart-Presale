@@ -1,8 +1,94 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Project, Round, Reservation, Transaction, ResearchItem, PricePoint, SecondaryListing, Trade, ProjectDocument } from '../types';
+import { randomUUID } from 'crypto';
+import {
+  Project,
+  Round,
+  Reservation,
+  Transaction,
+  ResearchItem,
+  PricePoint,
+  SecondaryListing,
+  Trade,
+  ProjectDocument,
+  Community,
+  AutomationWorkflow,
+  IntelligentAgent,
+  User,
+  Developer,
+  Tenant,
+  TenantSettings,
+  Client,
+  PaymentWebhook
+} from '../types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
+
+const DEFAULT_TENANT_ID = 'tenant_default';
+
+const nowISO = () => new Date().toISOString();
+
+const defaultTenants: Tenant[] = [
+  {
+    id: DEFAULT_TENANT_ID,
+    slug: 'smart-presale',
+    name: 'Smart Pre-Sale',
+    status: 'active',
+    region: 'latam',
+    metadata: { default: true },
+    createdAt: nowISO(),
+    updatedAt: nowISO()
+  }
+];
+
+const defaultTenantSettings: TenantSettings[] = [
+  {
+    id: randomUUID(),
+    tenantId: DEFAULT_TENANT_ID,
+    logoUrl: null,
+    darkLogoUrl: null,
+    squareLogoUrl: null,
+    faviconUrl: null,
+    primaryColor: '#1e3a8a',
+    primaryColorForeground: '#ffffff',
+    secondaryColor: '#10b981',
+    accentColor: '#f97316',
+    backgroundColor: '#f9fafb',
+    surfaceColor: '#ffffff',
+    foregroundColor: '#111827',
+    fontFamily: 'Inter',
+    metadata: { default: true },
+    createdAt: nowISO(),
+    updatedAt: nowISO()
+  }
+];
+
+const defaultUsers: User[] = [
+  { id: 'u_buyer_1', name: 'Ana Compradora', role: 'buyer', kycStatus: 'basic', tenantId: DEFAULT_TENANT_ID },
+  { id: 'u_dev_1', name: 'Carlos Dev', role: 'developer', kycStatus: 'verified', tenantId: DEFAULT_TENANT_ID },
+  { id: 'u_admin_1', name: 'Pat Admin', role: 'admin', kycStatus: 'verified', tenantId: DEFAULT_TENANT_ID }
+];
+
+const defaultDevelopers: Developer[] = [
+  { id: 'd1', userId: 'u_dev_1', company: 'BlueRock Dev S.A.', verifiedAt: nowISO(), tenantId: DEFAULT_TENANT_ID }
+];
+
+const defaultClients: Client[] = [
+  {
+    id: randomUUID(),
+    tenantId: DEFAULT_TENANT_ID,
+    name: 'Preventa Demo',
+    contactName: 'Ana Compradora',
+    contactEmail: 'ana@example.com',
+    contactPhone: '+52 555 555 0000',
+    status: 'active',
+    metadata: { origin: 'demo' },
+    createdAt: nowISO(),
+    updatedAt: nowISO()
+  }
+];
+
+const defaultPaymentWebhooks: PaymentWebhook[] = [];
 
 // Asegurar que el directorio data existe
 const ensureDataDir = async () => {
@@ -50,6 +136,154 @@ const writeJson = async <T>(filename: string, data: T[]): Promise<void> => {
 
 // Operaciones CRUD genéricas
 export const jsonDb = {
+  // Usuarios
+  async getUsers(): Promise<User[]> {
+    return readJson<User>('users.json', defaultUsers);
+  },
+
+  async saveUsers(users: User[]): Promise<void> {
+    return writeJson('users.json', users);
+  },
+
+  async getUserById(id: string): Promise<User | null> {
+    const users = await this.getUsers();
+    return users.find(user => user.id === id) ?? null;
+  },
+
+  async upsertUser(user: User): Promise<User> {
+    const users = await this.getUsers();
+    const index = users.findIndex(u => u.id === user.id);
+    if (index >= 0) {
+      users[index] = { ...users[index], ...user };
+    } else {
+      users.push(user);
+    }
+    await this.saveUsers(users);
+    return user;
+  },
+
+  // Desarrolladores
+  async getDevelopers(): Promise<Developer[]> {
+    return readJson<Developer>('developers.json', defaultDevelopers);
+  },
+
+  async saveDevelopers(developers: Developer[]): Promise<void> {
+    return writeJson('developers.json', developers);
+  },
+
+  async getDeveloperById(id: string): Promise<Developer | null> {
+    const developers = await this.getDevelopers();
+    return developers.find(dev => dev.id === id) ?? null;
+  },
+
+  async createDeveloper(developer: Developer): Promise<Developer> {
+    const developers = await this.getDevelopers();
+    developers.push(developer);
+    await this.saveDevelopers(developers);
+    return developer;
+  },
+
+  async updateDeveloper(id: string, updates: Partial<Developer>): Promise<Developer | null> {
+    const developers = await this.getDevelopers();
+    const index = developers.findIndex(dev => dev.id === id);
+    if (index === -1) return null;
+    developers[index] = { ...developers[index], ...updates };
+    await this.saveDevelopers(developers);
+    return developers[index];
+  },
+
+  // Tenants
+  async getTenants(): Promise<Tenant[]> {
+    return readJson<Tenant>('tenants.json', defaultTenants);
+  },
+
+  async saveTenants(tenants: Tenant[]): Promise<void> {
+    return writeJson('tenants.json', tenants);
+  },
+
+  async getTenantById(id: string): Promise<Tenant | null> {
+    const tenants = await this.getTenants();
+    return tenants.find(t => t.id === id) ?? null;
+  },
+
+  async createTenant(tenant: Tenant): Promise<Tenant> {
+    const tenants = await this.getTenants();
+    tenants.push(tenant);
+    await this.saveTenants(tenants);
+    return tenant;
+  },
+
+  async updateTenant(id: string, updates: Partial<Tenant>): Promise<Tenant | null> {
+    const tenants = await this.getTenants();
+    const index = tenants.findIndex(t => t.id === id);
+    if (index === -1) return null;
+    tenants[index] = { ...tenants[index], ...updates, updatedAt: updates.updatedAt ?? nowISO() };
+    await this.saveTenants(tenants);
+    return tenants[index];
+  },
+
+  // Clients
+  async getClients(): Promise<Client[]> {
+    return readJson<Client>('clients.json', defaultClients);
+  },
+
+  async saveClients(clients: Client[]): Promise<void> {
+    return writeJson('clients.json', clients);
+  },
+
+  async getClientsByTenantId(tenantId: string): Promise<Client[]> {
+    const clients = await this.getClients();
+    return clients.filter(client => client.tenantId === tenantId);
+  },
+
+  async createClient(client: Client): Promise<Client> {
+    const clients = await this.getClients();
+    clients.push(client);
+    await this.saveClients(clients);
+    return client;
+  },
+
+  async updateClient(id: string, updates: Partial<Client>): Promise<Client | null> {
+    const clients = await this.getClients();
+    const index = clients.findIndex(client => client.id === id);
+    if (index === -1) return null;
+    clients[index] = { ...clients[index], ...updates, updatedAt: updates.updatedAt ?? nowISO() };
+    await this.saveClients(clients);
+    return clients[index];
+  },
+
+  // Tenant settings
+  async getTenantSettings(): Promise<TenantSettings[]> {
+    return readJson<TenantSettings>('tenant_settings.json', defaultTenantSettings);
+  },
+
+  async saveTenantSettings(settings: TenantSettings[]): Promise<void> {
+    return writeJson('tenant_settings.json', settings);
+  },
+
+  async getTenantSettingsByTenantId(tenantId: string): Promise<TenantSettings | null> {
+    const settings = await this.getTenantSettings();
+    return settings.find(item => item.tenantId === tenantId) ?? null;
+  },
+
+  async upsertTenantSettings(settingsEntry: TenantSettings): Promise<TenantSettings> {
+    const settings = await this.getTenantSettings();
+    const index = settings.findIndex(item => item.tenantId === settingsEntry.tenantId);
+    if (index >= 0) {
+      const existing = settings[index];
+      settings[index] = {
+        ...existing,
+        ...settingsEntry,
+        createdAt: existing.createdAt,
+        updatedAt: nowISO()
+      };
+    } else {
+      settings.push({ ...settingsEntry, createdAt: nowISO(), updatedAt: nowISO() });
+    }
+    await this.saveTenantSettings(settings);
+    return settingsEntry;
+  },
+
   // Proyectos
   async getProjects(): Promise<Project[]> {
     return readJson<Project>('projects.json', []);
@@ -238,6 +472,41 @@ export const jsonDb = {
     return transactions[index];
   },
 
+  // Payment webhooks
+  async getPaymentWebhooks(): Promise<PaymentWebhook[]> {
+    return readJson<PaymentWebhook>('payment-webhooks.json', defaultPaymentWebhooks);
+  },
+
+  async savePaymentWebhooks(events: PaymentWebhook[]): Promise<void> {
+    return writeJson('payment-webhooks.json', events);
+  },
+
+  async getPaymentWebhookById(id: string): Promise<PaymentWebhook | null> {
+    const events = await this.getPaymentWebhooks();
+    return events.find(event => event.id === id) ?? null;
+  },
+
+  async createPaymentWebhook(event: PaymentWebhook): Promise<PaymentWebhook> {
+    const events = await this.getPaymentWebhooks();
+    const index = events.findIndex(e => e.id === event.id);
+    if (index >= 0) {
+      events[index] = { ...events[index], ...event };
+    } else {
+      events.push(event);
+    }
+    await this.savePaymentWebhooks(events);
+    return event;
+  },
+
+  async updatePaymentWebhook(id: string, updates: Partial<PaymentWebhook>): Promise<PaymentWebhook | null> {
+    const events = await this.getPaymentWebhooks();
+    const index = events.findIndex(event => event.id === id);
+    if (index === -1) return null;
+    events[index] = { ...events[index], ...updates } as PaymentWebhook;
+    await this.savePaymentWebhooks(events);
+    return events[index];
+  },
+
   // Research
   async getResearch(): Promise<ResearchItem[]> {
     return readJson<ResearchItem>('research.json', []);
@@ -394,6 +663,99 @@ export const jsonDb = {
     documents.splice(index, 1);
     await this.saveDocuments(documents);
     return true;
+  },
+
+  // Communities
+  async getCommunities(): Promise<Community[]> {
+    return readJson<Community>('communities.json', []);
+  },
+
+  async saveCommunities(communities: Community[]): Promise<void> {
+    return writeJson('communities.json', communities);
+  },
+
+  async getCommunityBySlug(slug: string): Promise<Community | null> {
+    const communities = await this.getCommunities();
+    return communities.find(c => c.slug === slug) || null;
+  },
+
+  async getCommunitiesByProjectId(projectId: string): Promise<Community[]> {
+    const communities = await this.getCommunities();
+    return communities.filter(c => c.projectId === projectId);
+  },
+
+  async createCommunity(community: Community): Promise<Community> {
+    const communities = await this.getCommunities();
+    communities.push(community);
+    await this.saveCommunities(communities);
+    return community;
+  },
+
+  async updateCommunity(id: string, updates: Partial<Community>): Promise<Community | null> {
+    const communities = await this.getCommunities();
+    const index = communities.findIndex(c => c.id === id);
+    if (index === -1) return null;
+    communities[index] = { ...communities[index], ...updates };
+    await this.saveCommunities(communities);
+    return communities[index];
+  },
+
+  // Automations
+  async getAutomations(): Promise<AutomationWorkflow[]> {
+    return readJson<AutomationWorkflow>('automations.json', []);
+  },
+
+  async saveAutomations(automations: AutomationWorkflow[]): Promise<void> {
+    return writeJson('automations.json', automations);
+  },
+
+  async createAutomation(workflow: AutomationWorkflow): Promise<AutomationWorkflow> {
+    const automations = await this.getAutomations();
+    automations.push(workflow);
+    await this.saveAutomations(automations);
+    return workflow;
+  },
+
+  async updateAutomation(id: string, updates: Partial<AutomationWorkflow>): Promise<AutomationWorkflow | null> {
+    const automations = await this.getAutomations();
+    const index = automations.findIndex(a => a.id === id);
+    if (index === -1) return null;
+    automations[index] = {
+      ...automations[index],
+      ...updates,
+      updatedAt: updates.updatedAt || automations[index].updatedAt
+    };
+    await this.saveAutomations(automations);
+    return automations[index];
+  },
+
+  // Agents
+  async getAgents(): Promise<IntelligentAgent[]> {
+    return readJson<IntelligentAgent>('agents.json', []);
+  },
+
+  async saveAgents(agents: IntelligentAgent[]): Promise<void> {
+    return writeJson('agents.json', agents);
+  },
+
+  async createAgent(agent: IntelligentAgent): Promise<IntelligentAgent> {
+    const agents = await this.getAgents();
+    agents.push(agent);
+    await this.saveAgents(agents);
+    return agent;
+  },
+
+  async updateAgent(id: string, updates: Partial<IntelligentAgent>): Promise<IntelligentAgent | null> {
+    const agents = await this.getAgents();
+    const index = agents.findIndex(a => a.id === id);
+    if (index === -1) return null;
+    agents[index] = {
+      ...agents[index],
+      ...updates,
+      updatedAt: updates.updatedAt || agents[index].updatedAt
+    };
+    await this.saveAgents(agents);
+    return agents[index];
   }
 };
 

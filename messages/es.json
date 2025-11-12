@@ -34,21 +34,225 @@
     "projects": "Proyectos",
     "myReservations": "Mis reservas",
     "devPanel": "Panel Dev",
+    "communities": "Comunidades",
     "admin": "Admin",
     "howItWorks": "Cómo funciona",
     "language": "Idioma",
     "spanish": "Español",
-    "english": "English"
+    "english": "English",
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión",
+    "roles": {
+      "buyer": "Comprador",
+      "developer": "Desarrollador",
+      "admin": "Admin"
+    },
+    "kyc": {
+      "none": "KYC pendiente",
+      "basic": "Datos capturados",
+      "verified": "Verificado"
+    }
+  },
+  "auth": {
+    "signUp": {
+      "title": "Crea tu cuenta Smart Presale",
+      "subtitle": "Recibe un enlace seguro o usa tu red social favorita.",
+      "emailTitle": "Acceso con correo",
+      "emailDescription": "Te enviaremos un enlace mágico (OTP) para validar tu correo.",
+      "emailLabel": "Correo electrónico",
+      "sendOtp": "Enviar enlace de acceso",
+      "sending": "Enviando...",
+      "otpSent": "Te enviamos un correo con tu enlace de acceso.",
+      "genericError": "Ocurrió un error. Inténtalo de nuevo.",
+      "oauthTitle": "Redes sociales",
+      "oauthDescription": "Conecta una de tus cuentas existentes para empezar.",
+      "continueWith": "Continuar con {provider}"
+    },
+    "kyc": {
+      "title": "Verifica tu identidad",
+      "subtitle": "Hola {name}, necesitamos confirmar tu información para activar tus reservas.",
+      "steps": {
+        "personal": "Datos personales",
+        "personalHint": "Nombre completo, contacto y domicilio.",
+        "documents": "Documentos",
+        "documentsHint": "Identificación y comprobante de domicilio."
+      },
+      "personalTitle": "Captura tus datos personales",
+      "documentsTitle": "Sube tus documentos",
+      "fields": {
+        "firstName": "Nombre(s)",
+        "lastName": "Apellidos",
+        "birthdate": "Fecha de nacimiento",
+        "country": "País",
+        "phone": "Teléfono",
+        "city": "Ciudad",
+        "addressLine1": "Dirección",
+        "addressLine2": "Departamento, interior (opcional)",
+        "state": "Estado / Provincia",
+        "postalCode": "Código postal"
+      },
+      "documents": {
+        "id_front": "Identificación oficial (frente)",
+        "id_back": "Identificación oficial (reverso)",
+        "proof_of_address": "Comprobante de domicilio"
+      },
+      "continue": "Continuar",
+      "submitDocuments": "Enviar documentos",
+      "saving": "Guardando...",
+      "personalSuccess": "Guardamos tus datos. Ahora sube tus documentos.",
+      "documentsSuccess": "Recibimos tus documentos. Te avisaremos cuando estén verificados.",
+      "missingDocuments": "Sube al menos un documento para continuar.",
+      "genericError": "Ocurrió un error. Inténtalo más tarde.",
+      "noUserTitle": "Necesitas iniciar sesión",
+      "noUserDescription": "Crea una cuenta o inicia sesión para completar tu verificación."
+    }
   },
   "home": {
-    "title": "Proyectos verificados",
-    "published": "Publicado",
-    "progress": "Progreso",
-    "deposit": "Depósito",
-    "viewDetail": "Ver detalle →",
-    "noProjects": "No hay proyectos disponibles"
+    "seo": {
+      "title": "Smart Presale X · Elige cómo quieres comprar",
+      "description": "Explora propiedades de entrega inmediata o únete a grupos Smart Presale según tus objetivos."
+    },
+    "hero": {
+      "title": "Elige cómo quieres comprar",
+      "subtitle": "Entrega inmediata o Smart Presale.",
+      "ctaImmediate": "Ver entrega inmediata",
+      "ctaPresale": "Entrar a Smart Presale"
+    },
+    "shortcuts": {
+      "title": "Atajos principales",
+      "subtitle": "Accede rápido a la experiencia que necesitas.",
+      "immediate": {
+        "title": "Entrega inmediata",
+        "description": "Propiedades disponibles para entrega inmediata.",
+        "cta": "Ver propiedades"
+      },
+      "presale": {
+        "title": "Smart Presale",
+        "description": "Sistema de preventa. Revisa y únete a grupos de preventa.",
+        "cta": "Ver grupos de preventa"
+      }
+    },
+    "search": {
+      "title": "Búsqueda",
+      "subtitle": "Escribe zona o desarrollo…",
+      "placeholder": "Zona o desarrollo",
+      "cta": "Buscar"
+    },
+    "sections": {
+      "immediateHeading": "Entrega inmediata",
+      "immediateDescription": "Propiedades disponibles para entrega inmediata.",
+      "immediateEmpty": "No hay propiedades de entrega inmediata por ahora.",
+      "presaleHeading": "Smart Presale",
+      "presaleDescription": "Sistema de preventa. Revisa y únete a grupos de preventa.",
+      "presaleEmpty": "No hay grupos de preventa disponibles por ahora."
+    },
+    "quickLinks": {
+      "title": "Llamados rápidos",
+      "immediate": "Ver todas las propiedades de entrega inmediata",
+      "presale": "Ver todos los grupos de preventa"
+    },
+    "listing": {
+      "price": "Precio: {price}",
+      "viewDetail": "Ver detalle →"
+    }
+  },
+  "projects": {
+    "seo": {
+      "title": "Smart Presale X · Preventas y propiedades listas para escriturar",
+      "description": "Descubre desarrollos verificados con automatizaciones listas, comunidades privadas y agentes IA para acompañar a tus compradores."
+    },
+    "hero": {
+      "badge": "Marketing inmobiliario inteligente",
+      "title": "Convierte preventas y stock en experiencias digitales",
+      "subtitle": "Segmenta leads, activa automatizaciones omnicanal y comparte evidencia en comunidades privadas.",
+      "ctaPrimary": "Explorar proyectos",
+      "ctaSecondary": "Unirme a la comunidad",
+      "metrics": {
+        "funding": "Avance de fondeo",
+        "stage": "Etapa",
+        "deposit": "Depósito"
+      }
+    },
+    "search": {
+      "cityPlaceholder": "Ciudad, destino o desarrollo",
+      "priceAny": "Cualquier precio",
+      "priceLow": "Menos de 250k",
+      "priceMid": "Entre 250k y 500k",
+      "priceHigh": "Más de 500k",
+      "cta": "Buscar"
+    },
+    "sections": {
+      "presaleHeading": "Campañas de preventa activas",
+      "presaleSubheading": "Reservas con contratos digitales, KYC y seguimiento automatizado.",
+      "saleHeading": "Propiedades listas para escriturar",
+      "saleSubheading": "Inventario premium con concierge IA y protocolos de entrega.",
+      "communityHeading": "Comunidades y acompañamiento inteligente",
+      "communitySubheading": "Activa foros por proyecto, seguimiento de obra y co-creación con inversionistas.",
+      "viewDashboard": "Ver panel de reservas",
+      "viewAll": "Ver catálogo completo",
+      "noPresale": "No hay campañas de preventa publicadas.",
+      "noSale": "No hay propiedades en venta disponibles."
+    },
+    "labels": {
+      "presale": "Preventa",
+      "sale": "Venta directa",
+      "stage": "Etapa",
+      "stageUnknown": "Por confirmar",
+      "deposit": "Depósito",
+      "price": "Precio",
+      "propertyType": "Tipología",
+      "progress": "Progreso",
+      "deadline": "Fecha límite",
+      "openProject": "Ver detalle →",
+      "notApplicable": "N/A"
+    },
+    "community": {
+      "scope": {
+        "global": "Global",
+        "campaign": "Campaña"
+      },
+      "members": "{count, plural, one {# miembro} other {# miembros}}",
+      "open": "Entrar a la comunidad"
+    }
+  },
+  "communityPage": {
+    "title": "Comunidades Smart Presale",
+    "subtitle": "Coordina a compradores, inversionistas y equipos internos con espacios moderados y automatizaciones.",
+    "globalTitle": "Comunidades globales",
+    "campaignTitle": "Comunidades por campaña",
+    "emptyGlobal": "Aún no hay comunidades globales publicadas.",
+    "emptyCampaign": "Todavía no hay comunidades activas por campaña.",
+    "scope": {
+      "global": "Global",
+      "campaign": "Campaña"
+    },
+    "members": "{count, plural, one {# miembro} other {# miembros}}",
+    "threads": "{count, plural, one {# hilo} other {# hilos}}",
+    "open": "Ver comunidad",
+    "detailSubtitle": "Súmate para recibir avances de obra, materiales comerciales y soporte dedicado.",
+    "tags": "Temas",
+    "featured": "Destacado",
+    "related": "Otras comunidades",
+    "notifications": {
+      "title": "Alertas de engagement",
+      "subtitle": "Dispara push, email o Slack desde un solo panel."
+    },
+    "forum": {
+      "title": "Moderación en vivo",
+      "subtitle": "Aprueba, pausa o marca conversaciones en segundos."
+    }
   },
   "project": {
+    "labels": {
+      "presale": "Preventa",
+      "sale": "Venta directa"
+    },
+    "availability": {
+      "available": "Disponible",
+      "reserved": "Reservado",
+      "sold": "Vendido",
+      "coming_soon": "Próximamente"
+    },
     "propertyInfo": "Información de la propiedad",
     "propertyType": "Tipo de propiedad",
     "propertyCost": "Costo de la propiedad",
@@ -87,10 +291,14 @@
       "last": "Último",
       "first": "Primero",
       "variation": "Variación",
-      "note": "*Curva se actualiza con trades del mercado secundario (mock)."
+      "note": "*Curva se actualiza con trades del mercado secundario (mock).",
+      "noData": "Sin datos",
+      "range": "Rango",
+      "lastPrice": "último"
     },
     "secondary": {
       "noRound": "Este proyecto no tiene una ronda activa.",
+      "saleMessage": "Este inventario se comercializa en mercado primario con concierge dedicado.",
       "sellSlots": "Vende tus slots (mercado interno)",
       "confirmedSlots": "Slots confirmados",
       "slotsToSell": "Slots a vender",
@@ -101,7 +309,9 @@
       "buy": "Comprar",
       "invalidData": "Datos inválidos",
       "listingPublished": "Listado publicado",
-      "purchaseCompleted": "Compra realizada (simulada)"
+      "purchaseCompleted": "Compra realizada (simulada)",
+      "slotsLabel": "slots",
+      "askPriceLabel": "Precio pedido"
     },
     "timeline": {
       "title": "Hitos",
@@ -114,7 +324,23 @@
       "title": "Acciones",
       "group": "Grupo",
       "depositPerSlot": "Depósito por slot",
-      "viewMyReservations": "Ver mis reservas →"
+      "viewMyReservations": "Ver mis reservas →",
+      "saleDescription": "Agenda visitas guiadas, coordinación de cierres y onboarding de residentes desde la comunidad privada.",
+      "contactSales": "Contactar concierge"
+    },
+    "automation": {
+      "title": "Automatizaciones listas",
+      "subtitle": "Conecta nurturing, scoring y alertas para tu equipo comercial.",
+      "workflowCount": "Flujos configurados",
+      "agentCount": "Agentes IA asignados",
+      "contact": "Contacto operaciones"
+    },
+    "community": {
+      "title": "Comunidad y seguimiento",
+      "subtitle": "Acceso exclusivo para compradores y aliados.",
+      "global": "Ver comunidad global",
+      "join": "Entrar",
+      "members": "{count, plural, one {# miembro} other {# miembros}}"
     },
     "kpis": {
       "totalUnits": "Unidades totales",
@@ -131,6 +357,81 @@
       "fulfilled": "Cumplido"
     },
     "progress": "Progreso de preventa"
+  },
+  "investmentRoom": {
+    "securedArea": "Sala de inversión",
+    "title": "Documentos y firmas",
+    "subtitle": "Comparte dossiers, flujos de firma y coordinación de escrow para {project}.",
+    "access": {
+      "title": "Control de acceso",
+      "subtitle": "Verifica KYC y roles autorizados antes de mostrar información sensible.",
+      "viewer": "Visualizador",
+      "anonymous": "Invitado",
+      "kycReady": "KYC validado",
+      "kycMissing": "Completa KYC",
+      "restricted": {
+        "title": "Acceso requerido",
+        "message": "Solo compradores verificados o admins pueden revisar la documentación.",
+        "actions": {
+          "startKyc": "Iniciar verificación",
+          "inviteTeam": "Invitar a mi equipo"
+        }
+      },
+      "granted": {
+        "title": "Compartición segura activa",
+        "point1": "Bitácora auditada para cada descarga y firma.",
+        "point2": "Previsualizaciones con marca de agua para prospectos.",
+        "point3": "Instrucciones de escrow alineadas a la ronda."
+      }
+    },
+    "documents": {
+      "title": "Paquete de due diligence",
+      "subtitle": "Permisos, contratos y términos listos para descargar."
+    },
+    "signature": {
+      "title": "Firma digital"
+    },
+    "funding": {
+      "title": "Playbook de fondeo",
+      "subtitle": "Orquesta escrow, cumplimiento y contra-firmas.",
+      "escrow": "Depósito en escrow",
+      "escrowDetail": "Reserva tu lugar con un depósito de {amount} en escrow.",
+      "dynamic": "dinámico",
+      "auditTrail": "Bitácora",
+      "auditDetail": "Registramos cada acción, IP y sello de tiempo para auditoría."
+    }
+  },
+  "devAnalytics": {
+    "title": "Analítica comercial",
+    "subtitle": "Monitorea embudos, atribución y cobertura de automatizaciones en tiempo real.",
+    "metrics": {
+      "totalLeads": "Leads",
+      "conversion": "Conversión",
+      "revenue": "Depósitos cobrados",
+      "automations": "Automatizaciones activas"
+    },
+    "leadOrigins": {
+      "title": "Origen de leads",
+      "subtitle": "Compara paid media, orgánico y comunidad."
+    },
+    "conversionTimeline": {
+      "title": "Timeline de conversión",
+      "subtitle": "Tasa diaria (%)"
+    },
+    "insights": {
+      "engagement": "Velocidad de seguimiento",
+      "engagementCopy": "El seguimiento ocurre en promedio a las {hours} horas del primer contacto.",
+      "campaigns": "Cobertura de campañas",
+      "campaignCopy": "{count} campañas nutriendo prospectos en canales coordinados.",
+      "rounds": "Rondas abiertas",
+      "roundCopy": "{count} rondas abiertas en {projects} proyectos."
+    }
+  },
+  "adminAutomations": {
+    "badge": "Suite de automatización",
+    "title": "Flujos automatizados",
+    "subtitle": "Orquesta nurturing, alertas y handoffs operativos desde un hub.",
+    "tableTitle": "Automatizaciones configuradas"
   },
   "reserve": {
     "title": "Reservar slots",
@@ -176,6 +477,9 @@
   "dev": {
     "title": "Panel Desarrollador",
     "newProject": "+ Nuevo proyecto",
+    "newPresale": "+ Nueva preventa",
+    "newSale": "+ Nueva propiedad en venta",
+    "listDescription": "Administra tus campañas de preventa y el inventario listo para venta directa.",
     "myProjects": "Mis proyectos",
     "noProjects": "Aún no has creado ningún proyecto.",
     "createFirstProject": "Crear primer proyecto",
@@ -186,6 +490,15 @@
     "financialInfo": "Información Financiera (opcional)",
     "propertyDetails": "Detalles de la propiedad (opcional)",
     "roundInfo": "Ronda de preventa",
+    "saleInfo": "Las propiedades en venta directa no requieren una ronda de preventa. Guarda el proyecto y publícalo desde Admin.",
+    "listingType": {
+      "presale": "Preventa",
+      "sale": "Venta directa"
+    },
+    "listingTypeHelp": {
+      "presale": "Activa una ronda de preventa con depósitos y cupos para reservas anticipadas.",
+      "sale": "Publica inventario listo para escriturar o entrega inmediata sin gestionar rondas."
+    },
     "projectDocuments": "Documentos del proyecto",
     "projectDocumentsDescription": "Sube documentos PDF con un título descriptivo",
     "loadingDocuments": "Cargando documentos...",
@@ -200,6 +513,7 @@
       "description": "Descripción *",
       "descriptionPlaceholder": "Describe el proyecto...",
       "images": "Imágenes (URLs o subir archivos)",
+      "listingType": "Tipo de inventario *",
       "videoUrl": "Video URL (opcional)",
       "videoUrlPlaceholder": "https://youtube.com/watch?v=...",
       "videoUrlHelp": "URL de video promocional (YouTube, Vimeo, etc.)",
@@ -273,10 +587,10 @@
       "countryRequired": "El país es requerido",
       "descriptionRequired": "La descripción es requerida",
       "imagesRequired": "Agrega al menos una imagen",
-      "goalValueRequired": "El valor meta debe ser mayor a 0",
-      "depositRequired": "El depósito debe ser mayor a 0",
-      "slotsPerPersonRequired": "Los slots por persona deben ser mayor a 0",
-      "deadlineDaysRequired": "Los días deben ser mayor a 0",
+      "goalValueRequired": "El valor meta debe ser mayor que 0",
+      "depositRequired": "El depósito debe ser mayor que 0",
+      "slotsPerPersonRequired": "Los slots por persona deben ser mayor que 0",
+      "deadlineDaysRequired": "Los días deben ser mayor que 0",
       "totalUnitsInvalid": "Las unidades totales deben ser un número positivo",
       "groupSlotsInvalid": "El grupo de preventa debe ser un número positivo",
       "validationError": "Por favor completa todos los campos requeridos"
@@ -284,32 +598,68 @@
     "messages": {
       "projectUpdated": "Proyecto actualizado exitosamente",
       "projectCreated": "Proyecto y ronda creados exitosamente. Envía a revisión/publicación desde Admin.",
+      "projectCreatedSale": "Propiedad en venta creada exitosamente. Admin puede publicarla de inmediato.",
       "projectSaveError": "No se pudo guardar el proyecto",
       "loadError": "Error al cargar proyectos",
       "saving": "Guardando...",
       "updateProject": "Actualizar proyecto",
-      "createProjectAndRound": "Crear proyecto y ronda"
+      "createProjectAndRound": "Crear proyecto y ronda",
+      "createSaleProject": "Guardar propiedad en venta"
     },
     "round": {
-      "round": "Ronda",
-      "deposit": "Depósito",
-      "noRound": "Sin ronda asociada",
-      "view": "Ver →"
+    "round": "Ronda",
+    "deposit": "Depósito",
+    "noRound": "Sin ronda asociada",
+    "view": "Ver →"
+    },
+    "sections": {
+      "presaleHeading": "Campañas de preventa",
+      "presaleSubheading": "Genera reservas anticipadas y monitorea tus rondas activas.",
+      "saleHeading": "Propiedades en venta directa",
+      "saleSubheading": "Publica inventario listo para entrega sin necesidad de rondas.",
+      "noPresale": "Aún no has creado campañas de preventa.",
+      "noSale": "Todavía no has cargado propiedades para venta directa.",
+      "salePrice": "Precio de venta: {price}",
+      "saleAvailability": "Disponibilidad: {status}",
+      "saleType": "Tipo de propiedad: {type}",
+      "saleMissingPrice": "Agrega un precio de venta para mostrarlo a los compradores."
     }
   },
   "admin": {
     "title": "Panel de Administración",
+    "subtitle": "Orquesta inventario, automatizaciones y comunidades desde un solo lugar.",
+    "tabs": {
+      "projects": "Portafolio",
+      "automations": "Automatizaciones",
+      "agents": "Agentes IA",
+      "communities": "Comunidades"
+    },
     "filters": {
       "all": "Todos los estados",
       "draft": "Borradores",
       "review": "En revisión",
       "published": "Publicados"
     },
+    "listingType": {
+      "presale": "Preventa",
+      "sale": "Venta directa"
+    },
     "stats": {
       "totalProjects": "Total proyectos",
       "draft": "Borradores",
       "review": "En revisión",
-      "published": "Publicados"
+      "published": "Publicados",
+      "presale": "Proyectos preventa",
+      "sale": "En venta"
+    },
+    "projects": {
+      "subtitle": "Administra estados, rondas y alista tus campañas para automatización.",
+      "automationReady": "Listo para automatizaciones",
+      "availability": "{status, select, available{Disponible} reserved{Reservado} sold{Vendido} coming_soon{Próximamente} other{Estado desconocido}}",
+      "assignedAgents": "{count, plural, one {# agente IA asignado} other {# agentes IA asignados}}",
+      "type": "Tipo",
+      "stage": "Etapa",
+      "deposit": "Depósito"
     },
     "noProjects": "No hay proyectos.",
     "noProjectsFiltered": "No hay proyectos con estado \"{status}\".",
@@ -331,14 +681,140 @@
     "slots": "slots",
     "downloadIcs": "Descargar .ics",
     "viewProject": "Ver proyecto →",
+    "openPayouts": "Ver conciliaciones",
     "noRound": "Este proyecto no tiene una ronda asociada. El desarrollador debe crear una ronda.",
     "reservations": "reservas",
+    "automations": {
+      "total": "Flujos configurados",
+      "active": "Activos",
+      "channels": "Canales conectados",
+      "createTitle": "Configurar automatización",
+      "createDescription": "Define disparadores y canales para activar secuencias de nurturing o alertas.",
+      "form": {
+        "namePlaceholder": "Nombre interno del flujo",
+        "anyProject": "Aplicar a cualquier proyecto",
+        "project": "Proyecto",
+        "trigger": "Disparador",
+        "channel": "Canal",
+        "descriptionPlaceholder": "Notas del flujo, playbook o checklist",
+        "submit": "Guardar flujo"
+      },
+      "triggers": {
+        "new_lead": "Nuevo lead",
+        "new_reservation": "Nueva reserva",
+        "milestone": "Hito de campaña",
+        "manual": "Manual / bajo demanda"
+      },
+      "channels_email": "Email",
+      "channels_whatsapp": "WhatsApp",
+      "channels_slack": "Slack",
+      "channels_crm": "CRM",
+      "status": {
+        "draft": "Borrador",
+        "active": "Activo",
+        "paused": "Pausado"
+      },
+      "pause": "Pausar",
+      "activate": "Activar",
+      "cycle": "Cambiar estado",
+      "empty": "Aún no hay automatizaciones configuradas.",
+      "created": "Automatización creada",
+      "statusUpdated": "Estado actualizado"
+    },
+    "agents": {
+      "createTitle": "Agregar agente inteligente",
+      "createDescription": "Entrena agentes IA internos para ventas, concierge o analítica.",
+      "form": {
+        "name": "Nombre del agente",
+        "playbook": "Playbook / pitch principal",
+        "languages": "Idiomas (separados por coma)",
+        "handoff": "Correo de handoff (opcional)",
+        "submit": "Guardar agente"
+      },
+      "persona": {
+        "sales": "Ventas consultivas",
+        "concierge": "Concierge / hospitality",
+        "community": "Community manager",
+        "operations": "Operaciones / analista"
+      },
+      "status": {
+        "training": "Entrenando",
+        "ready": "Activo",
+        "paused": "Pausado"
+      },
+      "projects": "Proyectos asignados",
+      "activate": "Activar",
+      "pause": "Pausar",
+      "created": "Agente creado",
+      "statusUpdated": "Estado de agente actualizado",
+      "empty": "Aún no hay agentes configurados."
+    },
+    "communities": {
+      "empty": "Aún no hay comunidades creadas.",
+      "members": "{count, plural, one {# miembro} other {# miembros}}",
+      "open": "Abrir comunidad",
+      "scope": {
+        "global": "Global",
+        "campaign": "Campaña"
+      },
+      "createTitle": "Crear comunidad",
+      "createDescription": "Organiza tus espacios digitales por preventa o mantén una comunidad general para tu marca.",
+      "form": {
+        "name": "Nombre de la comunidad *",
+        "description": "Descripción *",
+        "scope": "Tipo de comunidad",
+        "scopeHelp": "Usa \"Campaña\" para agrupar a inversionistas de una preventa específica o \"General\" para toda tu comunidad.",
+        "scopeOptions": {
+          "campaign": "Campaña de preventa",
+          "global": "General"
+        },
+        "project": "Proyecto asociado (opcional)",
+        "projectHelp": "Selecciona el proyecto de preventa al que pertenece este grupo.",
+        "round": "Ronda (opcional)",
+        "roundHelp": "Vincula la ronda de preventa si quieres segmentar por grupo específico.",
+        "tags": "Etiquetas (separadas por comas)",
+        "coverImage": "Imagen de portada (URL opcional)",
+        "submit": "Crear comunidad",
+        "creating": "Creando...",
+        "success": "Comunidad creada exitosamente",
+        "error": "No se pudo crear la comunidad"
+      }
+    },
     "messages": {
       "projectPublished": "Proyecto publicado exitosamente",
       "projectUpdated": "Proyecto actualizado a \"{status}\"",
       "updateError": "No se pudo actualizar el proyecto. Intenta nuevamente.",
       "loadError": "Error al cargar proyectos"
     }
+  },
+  "adminPayouts": {
+    "metaTitle": "Conciliación de fondos · Admin",
+    "metaDescription": "Audita reservas, pagos y reembolsos en todas las rondas.",
+    "title": "Conciliación de fondos",
+    "subtitle": "Descarga reportes listos para compartir con depósitos, pagos y reembolsos.",
+    "downloadCsv": "Descargar reporte CSV",
+    "summaryTitle": "Resumen",
+    "summary": {
+      "totalVolume": "Volumen total",
+      "succeeded": "Confirmados",
+      "refunded": "Reembolsados"
+    },
+    "table": {
+      "transaction": "Transacción",
+      "project": "Proyecto",
+      "round": "Ronda",
+      "amount": "Monto",
+      "status": "Estado",
+      "provider": "Proveedor",
+      "payoutAt": "Pago en"
+    },
+    "statuses": {
+      "pending": "Pendiente",
+      "succeeded": "Confirmada",
+      "refunded": "Reembolsada"
+    },
+    "empty": "Aún no hay transacciones.",
+    "unknownProject": "Proyecto desconocido"
   },
   "forms": {
     "required": "Este campo es requerido",
@@ -357,7 +833,11 @@
     "deleteSuccess": "Eliminado exitosamente",
     "deleteError": "Error al eliminar",
     "updateSuccess": "Actualizado exitosamente",
-    "updateError": "Error al actualizar"
+    "updateError": "Error al actualizar",
+    "paymentInitiated": "Pago iniciado",
+    "paymentPending": "Pago pendiente de confirmación",
+    "paymentActionRequired": "Se requiere una acción adicional",
+    "paymentWaitlisted": "Agregado a la lista de espera"
   },
   "status": {
     "pending": "Pendiente",

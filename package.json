@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tenant:bootstrap": "node scripts/tenant-bootstrap.js"
   },
   "dependencies": {
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/supabase-js": "^2.45.4",
     "clsx": "2.1.1",
     "next": "14.2.5",
     "next-intl": "^4.4.0",

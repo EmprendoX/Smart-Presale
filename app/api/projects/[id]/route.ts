@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/config";
 import { findProjectById, findProjectBySlug } from "@/lib/mockdb";
 import { ProjectStatus } from "@/lib/types";
+import { validateAuthAndRole, createPermissionErrorResponse } from "@/lib/auth/roles";
 
 // Validar transiciones de estado válidas
 const isValidStatusTransition = (currentStatus: ProjectStatus, newStatus: ProjectStatus): boolean => {
@@ -22,7 +23,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   return NextResponse.json({ ok: true, data: { project: p, round } });
 }
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const body = await req.json();
     const { id } = await params;
@@ -33,6 +34,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ ok: false, error: "Proyecto no encontrado" }, { status: 404 });
     }
 
+    // Validar autenticación
+    const user = await validateAuthAndRole(req);
+    if (!user) {
+      return NextResponse.json({ ok: false, error: "Debes iniciar sesión para actualizar proyectos" }, { status: 401 });
+    }
+
     // Validar transición de estado si se está actualizando el status
     if (body.status && body.status !== p.status) {
       if (!isValidStatusTransition(p.status, body.status)) {
@@ -40,6 +47,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           ok: false, 
           error: `Transición de estado inválida: no se puede cambiar de "${p.status}" a "${body.status}"` 
         }, { status: 400 });
+      }
+
+      // Solo admin puede publicar proyectos
+      if (body.status === "published" && user.role !== "admin") {
+        return createPermissionErrorResponse("Solo los administradores pueden publicar proyectos");
       }
     }
 
