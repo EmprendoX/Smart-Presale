@@ -25,7 +25,9 @@ npm run dev  # localhost:3000
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `DEFAULT_TENANT_ID` / `DEFAULT_TENANT_SLUG` (según la topología del proyecto)
-2. Vuelve a ejecutar `npm run dev` para cargar la configuración.
+2. Revisa el [runbook de Supabase](docs/runbooks/supabase-setup.md) y aplica **antes de levantar la app** los scripts `supabase/schema.sql` y `supabase/storage-setup.sql` para garantizar tablas, índices y bucket KYC.
+3. Ejecuta `node scripts/seed-supabase-users.mjs` para poblar usuarios demo y sincronizar metadata. Si migraste usuarios vía Supabase Auth, corre también `node scripts/migrate-app-users.mjs`.
+4. Vuelve a ejecutar `npm run dev` para cargar la configuración.
 
 > ℹ️ El servicio de pagos usa un **driver mock** por defecto. Solo debes configurar las variables de Stripe si quieres probar cobros reales; sin Stripe seguirá funcionando con el mock.
 
