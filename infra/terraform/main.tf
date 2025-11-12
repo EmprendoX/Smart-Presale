@@ -105,6 +105,7 @@ resource "null_resource" "deploy_vercel" {
       SUPABASE_SERVICE_ROLE_KEY      = coalesce(data.external.project_config.result.service_key, "")
       DEFAULT_TENANT_SLUG            = var.tenant_slug
       TENANT_BASE_DOMAIN             = var.base_domain
+      USE_SUPABASE                   = "true"
     }
   }
 
@@ -128,6 +129,7 @@ output "supabase_env" {
     SUPABASE_SERVICE_ROLE_KEY     = data.external.project_config.result.service_key
     DEFAULT_TENANT_SLUG           = var.tenant_slug
     TENANT_BASE_DOMAIN            = var.base_domain
+    USE_SUPABASE                  = "true"
   }
   sensitive = true
 }
