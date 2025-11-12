@@ -113,12 +113,12 @@ export function Navbar() {
             <option value="en">{t("english")}</option>
           </Select>
           {(loading && !loadingTimeout) ? (
-            <div className="h-9 w-20 bg-neutral-200 animate-pulse rounded-md"></div>
+            <div className="h-9 w-20 bg-[color:var(--bg-soft)] animate-pulse rounded-md"></div>
           ) : user ? (
             <div className="flex items-center gap-3">
-              <div className="text-sm text-neutral-600">
-                <p className="font-medium text-neutral-900">{user.fullName || user.email}</p>
-                <p className="text-xs capitalize text-neutral-500">
+              <div className="text-sm text-[color:var(--text-muted)]">
+                <p className="font-medium text-[color:var(--text-strong)]">{user.fullName || user.email}</p>
+                <p className="text-xs capitalize text-[color:var(--text-muted)]">
                   {t(`roles.${user.role}` as any)} · {t(`kyc.${user.kycStatus}` as any)}
                 </p>
               </div>

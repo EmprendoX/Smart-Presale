@@ -21,8 +21,29 @@ export default {
           800: "#003e6e",
           900: "#00294a",
           950: "#001a30",
-          DEFAULT: "#0b8bd9",
+          DEFAULT: "var(--brand-primary)",
+          hover: "var(--brand-primary-hover)",
+          active: "var(--brand-primary-active)",
           dark: "#006bb6"
+        },
+        text: {
+          strong: "var(--text-strong)",
+          muted: "var(--text-muted)",
+          inverse: "var(--text-inverse)"
+        },
+        bg: {
+          base: "var(--bg-base)",
+          surface: "var(--bg-surface)",
+          soft: "var(--bg-soft)"
+        },
+        line: {
+          DEFAULT: "var(--line)"
+        },
+        semantic: {
+          success: "var(--success)",
+          warning: "var(--warning)",
+          error: "var(--error)",
+          info: "var(--info)"
         },
         sand: {
           50: "#fff9f2",

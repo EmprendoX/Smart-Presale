@@ -52,9 +52,9 @@ const ListingCard = ({ project, locale, t }: ListingCardProps) => {
   const coverImage = project.images?.[0] ?? PROJECT_IMAGE_PLACEHOLDER;
 
   return (
-    <Card className="group overflow-hidden rounded-2xl border border-blue-100 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <Card className="group overflow-hidden rounded-2xl border border-[color:var(--line)] shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
       <CardContent className="p-0">
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-blue-50">
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-[color:var(--bg-soft)]">
           <Image
             src={coverImage}
             alt={`Imagen del proyecto ${project.name}`}
@@ -67,22 +67,22 @@ const ListingCard = ({ project, locale, t }: ListingCardProps) => {
         </div>
         <div className="space-y-4 p-5">
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-neutral-900">{project.name}</h3>
-            <p className="text-sm text-neutral-600">
+            <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{project.name}</h3>
+            <p className="text-sm text-[color:var(--text-muted)]">
               {project.city}, {project.country}
             </p>
           </div>
           {propertyType ? (
-            <p className="text-sm text-neutral-500">{propertyType}</p>
+            <p className="text-sm text-[color:var(--text-muted)]">{propertyType}</p>
           ) : null}
           {price ? (
-            <p className="text-sm font-medium text-neutral-900">
+            <p className="text-sm font-medium text-[color:var(--text-strong)]">
               {t("listing.price", { price })}
             </p>
           ) : null}
           <Link
             href={`/p/${project.slug}`}
-            className="inline-flex text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+            className="inline-flex text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-primary-hover)] hover:underline transition-colors"
           >
             {t("listing.viewDetail")}
           </Link>
@@ -102,22 +102,22 @@ export default async function HomePage({ params }: { params: Params }) {
 
   return (
     <div className="space-y-12">
-      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-white via-blue-50 to-cyan-50 px-10 py-12 shadow-lg border border-blue-100">
+      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[color:var(--bg-surface)] via-[color:var(--bg-soft)] to-[color:var(--bg-soft)] px-10 py-12 shadow-lg border border-[color:var(--line)]">
         <div className="space-y-6">
           <div className="space-y-3">
-            <h1 className="text-3xl font-semibold md:text-4xl text-blue-700">{t("hero.title")}</h1>
-            <p className="text-lg text-blue-600">{t("hero.subtitle")}</p>
+            <h1 className="text-3xl font-semibold md:text-4xl text-[color:var(--brand-primary-hover)]">{t("hero.title")}</h1>
+            <p className="text-lg text-[color:var(--brand-primary)]">{t("hero.subtitle")}</p>
           </div>
           <div className="flex flex-wrap gap-4">
             <Link
               href="/projects#sale"
-              className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200"
+              className="inline-flex items-center rounded-lg bg-[color:var(--brand-primary)] px-6 py-3 text-sm font-semibold text-[color:var(--text-inverse)] shadow-md hover:bg-[color:var(--brand-primary-hover)] hover:shadow-lg transition-all duration-200"
             >
               {t("hero.ctaImmediate")}
             </Link>
             <Link
               href="/projects#presale"
-              className="inline-flex items-center rounded-lg border-2 border-blue-600 bg-white px-6 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50 hover:shadow-md transition-all duration-200"
+              className="inline-flex items-center rounded-lg border-2 border-[color:var(--brand-primary)] bg-[color:var(--bg-surface)] px-6 py-3 text-sm font-semibold text-[color:var(--brand-primary)] hover:bg-[color:var(--bg-soft)] hover:shadow-md transition-all duration-200"
             >
               {t("hero.ctaPresale")}
             </Link>
@@ -127,24 +127,24 @@ export default async function HomePage({ params }: { params: Params }) {
 
       <section className="space-y-6">
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-neutral-900">{t("shortcuts.title")}</h2>
-          <p className="text-sm text-neutral-600">{t("shortcuts.subtitle")}</p>
+          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("shortcuts.title")}</h2>
+          <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.subtitle")}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <Card className="border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-[color:var(--line)] shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="space-y-3 p-6">
-              <h3 className="text-lg font-semibold text-neutral-900">{t("shortcuts.immediate.title")}</h3>
-              <p className="text-sm text-neutral-600">{t("shortcuts.immediate.description")}</p>
-              <Link href="/projects#sale" className="inline-flex text-sm font-medium text-caribbean-blue-600 hover:text-caribbean-blue-700 hover:underline transition-colors">
+              <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{t("shortcuts.immediate.title")}</h3>
+              <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.immediate.description")}</p>
+              <Link href="/projects#sale" className="inline-flex text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-primary-hover)] hover:underline transition-colors">
                 {t("shortcuts.immediate.cta")}
               </Link>
             </CardContent>
           </Card>
-          <Card className="border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-[color:var(--line)] shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="space-y-3 p-6">
-              <h3 className="text-lg font-semibold text-neutral-900">{t("shortcuts.presale.title")}</h3>
-              <p className="text-sm text-neutral-600">{t("shortcuts.presale.description")}</p>
-              <Link href="/projects#presale" className="inline-flex text-sm font-medium text-caribbean-blue-600 hover:text-caribbean-blue-700 hover:underline transition-colors">
+              <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{t("shortcuts.presale.title")}</h3>
+              <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.presale.description")}</p>
+              <Link href="/projects#presale" className="inline-flex text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-primary-hover)] hover:underline transition-colors">
                 {t("shortcuts.presale.cta")}
               </Link>
             </CardContent>
@@ -154,10 +154,10 @@ export default async function HomePage({ params }: { params: Params }) {
 
       <section className="space-y-4">
         <div className="space-y-1">
-          <h2 className="text-2xl font-semibold text-neutral-900">{t("search.title")}</h2>
-          <p className="text-sm text-neutral-600">{t("search.subtitle")}</p>
+          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("search.title")}</h2>
+          <p className="text-sm text-[color:var(--text-muted)]">{t("search.subtitle")}</p>
         </div>
-        <form className="flex flex-col gap-4 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:flex-row">
+        <form className="flex flex-col gap-4 rounded-2xl border border-[color:var(--line)] bg-[color:var(--bg-surface)] p-6 shadow-sm sm:flex-row">
           <div className="flex-1">
             <Input placeholder={t("search.placeholder") as string} />
           </div>
@@ -169,12 +169,12 @@ export default async function HomePage({ params }: { params: Params }) {
 
       <section id="sale" className="space-y-4">
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-neutral-900">{t("sections.immediateHeading")}</h2>
-          <p className="text-sm text-neutral-600">{t("sections.immediateDescription")}</p>
+          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("sections.immediateHeading")}</h2>
+          <p className="text-sm text-[color:var(--text-muted)]">{t("sections.immediateDescription")}</p>
         </div>
         {immediateListings.length === 0 ? (
-          <Card className="border-blue-100">
-            <CardContent className="py-8 text-center text-sm text-neutral-600">
+          <Card className="border-[color:var(--line)]">
+            <CardContent className="py-8 text-center text-sm text-[color:var(--text-muted)]">
               {t("sections.immediateEmpty")}
             </CardContent>
           </Card>
@@ -189,12 +189,12 @@ export default async function HomePage({ params }: { params: Params }) {
 
       <section id="presale" className="space-y-4">
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-neutral-900">{t("sections.presaleHeading")}</h2>
-          <p className="text-sm text-neutral-600">{t("sections.presaleDescription")}</p>
+          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("sections.presaleHeading")}</h2>
+          <p className="text-sm text-[color:var(--text-muted)]">{t("sections.presaleDescription")}</p>
         </div>
         {presaleListings.length === 0 ? (
-          <Card className="border-blue-100">
-            <CardContent className="py-8 text-center text-sm text-neutral-600">
+          <Card className="border-[color:var(--line)]">
+            <CardContent className="py-8 text-center text-sm text-[color:var(--text-muted)]">
               {t("sections.presaleEmpty")}
             </CardContent>
           </Card>
@@ -208,17 +208,17 @@ export default async function HomePage({ params }: { params: Params }) {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-neutral-900">{t("quickLinks.title")}</h2>
+        <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("quickLinks.title")}</h2>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
             href="/projects#sale"
-            className="inline-flex items-center justify-center rounded-lg border border-blue-200 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-50 hover:shadow-md transition-all"
+            className="inline-flex items-center justify-center rounded-lg border border-[color:var(--line)] px-4 py-2 text-sm font-medium text-[color:var(--brand-primary-hover)] shadow-sm hover:bg-[color:var(--bg-soft)] hover:shadow-md transition-all"
           >
             {t("quickLinks.immediate")}
           </Link>
           <Link
             href="/projects#presale"
-            className="inline-flex items-center justify-center rounded-lg border border-blue-200 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-50 hover:shadow-md transition-all"
+            className="inline-flex items-center justify-center rounded-lg border border-[color:var(--line)] px-4 py-2 text-sm font-medium text-[color:var(--brand-primary-hover)] shadow-sm hover:bg-[color:var(--bg-soft)] hover:shadow-md transition-all"
           >
             {t("quickLinks.presale")}
           </Link>

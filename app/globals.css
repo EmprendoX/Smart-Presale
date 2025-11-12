@@ -2,16 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* SMART PRESALE — Tokens de color (LIGHT) */
 :root {
-  --tenant-primary: #00B4D8;
-  --tenant-primary-hover: #0077B6;
-  --tenant-primary-soft: #90E0EF;
-  --tenant-primary-contrast: #ffffff;
-  --tenant-secondary: #0077B6;
-  --tenant-accent: #90E0EF;
-  --tenant-background: #ffffff;
-  --tenant-surface: #ffffff;
-  --tenant-foreground: #0f172a;
+  /* Marca */
+  --brand-primary: #0B63CE;
+  --brand-primary-hover: #084E9E;
+  --brand-primary-active: #073D7A;
+  --brand-accent: #00AFAA;
+
+  /* Semánticos */
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --error: #DC2626;
+  --info: #2563EB;
+
+  /* Texto */
+  --text-strong: #0F172A;
+  --text-muted: #475569;
+  --text-inverse: #FFFFFF;
+
+  /* Superficies y contornos */
+  --bg-base: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-soft: #F1F5F9;
+  --line: #E2E8F0;
+
+  /* Estados */
+  --focus-ring: #0B63CE;
+  --disabled: #CBD5E1;
+
+  /* Overlays */
+  --overlay-40: rgba(2, 6, 23, 0.40);
+  --overlay-60: rgba(2, 6, 23, 0.60);
+
+  /* Compatibilidad hacia atrás: alias --tenant-* apuntan a nuevos tokens */
+  --tenant-primary: var(--brand-primary);
+  --tenant-primary-hover: var(--brand-primary-hover);
+  --tenant-primary-soft: var(--bg-soft);
+  --tenant-primary-contrast: var(--text-inverse);
+  --tenant-secondary: var(--brand-primary-hover);
+  --tenant-accent: var(--brand-accent);
+  --tenant-background: var(--bg-base);
+  --tenant-surface: var(--bg-surface);
+  --tenant-foreground: var(--text-strong);
   --tenant-font-family: 'Inter';
 }
 
@@ -20,23 +53,57 @@ html, body, #__next {
 }
 
 body {
-  background-color: var(--tenant-background);
-  color: var(--tenant-foreground);
+  background-color: var(--bg-base);
+  color: var(--text-strong);
   font-family: var(--tenant-font-family), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background-image:
-    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--tenant-primary) 8%, transparent), transparent 70%),
-    radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--tenant-accent) 10%, transparent), transparent 65%);
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--brand-primary) 8%, transparent), transparent 70%),
+    radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--brand-accent) 10%, transparent), transparent 65%);
   background-attachment: fixed;
   background-size: 1400px 1400px, 1200px 1200px;
   @apply antialiased;
 }
 
+/* SMART PRESALE — Tokens de color (DARK) */
+[data-theme="dark"] {
+  /* Marca (ligeramente más clara para contraste) */
+  --brand-primary: #3B82F6;
+  --brand-primary-hover: #2563EB;
+  --brand-primary-active: #1E40AF;
+  --brand-accent: #34D2CD;
+
+  /* Semánticos */
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #60A5FA;
+
+  /* Texto */
+  --text-strong: #E5E7EB;
+  --text-muted: #9CA3AF;
+  --text-inverse: #0B1220;
+
+  /* Superficies y contornos */
+  --bg-base: #0B1220;
+  --bg-surface: #0F172A;
+  --bg-soft: #111827;
+  --line: #374151;
+
+  /* Estados */
+  --focus-ring: #3B82F6;
+  --disabled: #475569;
+
+  /* Overlays */
+  --overlay-40: rgba(0, 0, 0, 0.40);
+  --overlay-60: rgba(0, 0, 0, 0.60);
+}
+
 @media (prefers-color-scheme: dark) {
-  body {
+  body:not([data-theme="light"]) {
     background-image:
-      radial-gradient(circle at 15% 10%, color-mix(in srgb, var(--tenant-primary) 12%, transparent), transparent 65%),
-      radial-gradient(circle at 80% 10%, color-mix(in srgb, var(--tenant-accent) 10%, transparent), transparent 65%);
-    background-color: #f8f9fa;
+      radial-gradient(circle at 15% 10%, color-mix(in srgb, var(--brand-primary) 12%, transparent), transparent 65%),
+      radial-gradient(circle at 80% 10%, color-mix(in srgb, var(--brand-accent) 10%, transparent), transparent 65%);
+    background-color: var(--bg-base);
   }
 }
 
@@ -46,13 +113,27 @@ body {
 
 h1,h2,h3 { @apply font-semibold tracking-tight; }
 
-.bg-brand { background-color: var(--tenant-primary); }
-.hover\:bg-brand-dark:hover { background-color: var(--tenant-primary-hover); }
-.hover\:bg-brand-soft:hover { background-color: var(--tenant-primary-soft); }
-.text-brand { color: var(--tenant-primary); }
-.text-on-brand { color: var(--tenant-primary-contrast); }
-.bg-surface { background-color: var(--tenant-surface); }
-.text-foreground { color: var(--tenant-foreground); }
-.border-brand { border-color: var(--tenant-primary); }
+/* Clases utilitarias usando nuevos tokens */
+.bg-brand { background-color: var(--brand-primary); }
+.hover\:bg-brand-dark:hover { background-color: var(--brand-primary-hover); }
+.hover\:bg-brand-soft:hover { background-color: var(--bg-soft); }
+.text-brand { color: var(--brand-primary); }
+.text-on-brand { color: var(--text-inverse); }
+.bg-surface { background-color: var(--bg-surface); }
+.text-foreground { color: var(--text-strong); }
+.border-brand { border-color: var(--brand-primary); }
+
+/* Nuevas utilidades */
+.bg-soft { background-color: var(--bg-soft); }
+.text-muted { color: var(--text-muted); }
+.border-line { border-color: var(--line); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-error { color: var(--error); }
+.text-info { color: var(--info); }
+.bg-success { background-color: var(--success); }
+.bg-warning { background-color: var(--warning); }
+.bg-error { background-color: var(--error); }
+.bg-info { background-color: var(--info); }
 
 

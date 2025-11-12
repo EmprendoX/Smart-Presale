@@ -6,6 +6,7 @@ import type { CSSProperties } from 'react';
 import { routing } from '@/i18n/routing';
 import { Navbar } from '@/components/Navbar';
 import { ToastProvider } from '@/components/ui/Toast';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { TenantProvider } from '@/providers/TenantProvider';
 import type { Tenant, TenantSettings } from '@/lib/types';
@@ -84,21 +85,23 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body
         style={mergedCssVariables as CSSProperties}
-        className="bg-[color:var(--tenant-background)] text-foreground"
+        className="bg-[color:var(--bg-base)] text-foreground"
         data-tenant={tenantContext.tenant?.slug ?? 'default'}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <TenantProvider value={tenantContext}>
-            <AuthProvider>
-              <ToastProvider>
-                <Navbar />
-                <main className="container py-8">{children}</main>
-              </ToastProvider>
-            </AuthProvider>
-          </TenantProvider>
+          <ThemeProvider>
+            <TenantProvider value={tenantContext}>
+              <AuthProvider>
+                <ToastProvider>
+                  <Navbar />
+                  <main className="container py-8">{children}</main>
+                </ToastProvider>
+              </AuthProvider>
+            </TenantProvider>
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

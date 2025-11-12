@@ -48,19 +48,19 @@ export default function FinancialHeader({
     : "neutral";
 
   return (
-    <div className="rounded-xl border p-4 bg-gradient-to-b from-white to-neutral-50">
+    <div className="rounded-xl border border-[color:var(--line)] p-4 bg-gradient-to-b from-[color:var(--bg-surface)] to-[color:var(--bg-soft)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
-          <div className="text-xs text-neutral-500">{ticker || "SPS:UNLISTED"}</div>
+          <div className="text-xs text-[color:var(--text-muted)]">{ticker || "SPS:UNLISTED"}</div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">{name}</h1>
+            <h1 className="text-2xl font-semibold text-[color:var(--text-strong)]">{name}</h1>
             <Badge color={listingType === "presale" ? "green" : "neutral"}>
               {listingType === "presale" ? t("labels.presale") : t("labels.sale")}
             </Badge>
             {stage && <Badge color="neutral">{stage}</Badge>}
           </div>
           {availability && (
-            <div className="text-xs text-neutral-500">{availability}</div>
+            <div className="text-xs text-[color:var(--text-muted)]">{availability}</div>
           )}
         </div>
         {status && (
@@ -70,20 +70,20 @@ export default function FinancialHeader({
       {showProgress && (
         <div className="mt-3">
           <Progress value={percent} />
-          <div className="mt-1 text-sm text-neutral-700">{t("progress")}: {percent}%</div>
+          <div className="mt-1 text-sm text-[color:var(--text-muted)]">{t("progress")}: {percent}%</div>
         </div>
       )}
       <div className="mt-4 grid sm:grid-cols-4 gap-3">
         {kpis.map((k) => (
-          <div key={k.label} className="rounded-lg border bg-white p-3">
-            <div className="text-xs text-neutral-500">{k.label}</div>
-            <div className="text-base font-medium">{k.value}</div>
+          <div key={k.label} className="rounded-lg border border-[color:var(--line)] bg-[color:var(--bg-surface)] p-3">
+            <div className="text-xs text-[color:var(--text-muted)]">{k.label}</div>
+            <div className="text-base font-medium text-[color:var(--text-strong)]">{k.value}</div>
           </div>
         ))}
         {typeof left !== "undefined" && showProgress && (
-          <div className="rounded-lg border bg-white p-3">
-            <div className="text-xs text-neutral-500">{t("kpis.deadline")}</div>
-            <div className="text-base font-medium">{left} {tCommon("days")}</div>
+          <div className="rounded-lg border border-[color:var(--line)] bg-[color:var(--bg-surface)] p-3">
+            <div className="text-xs text-[color:var(--text-muted)]">{t("kpis.deadline")}</div>
+            <div className="text-base font-medium text-[color:var(--text-strong)]">{left} {tCommon("days")}</div>
           </div>
         )}
       </div>

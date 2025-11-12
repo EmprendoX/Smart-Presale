@@ -11,7 +11,7 @@ export function Input({ label, className, id, ...props }: InputProps) {
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-neutral-700 mb-1">
+        <label htmlFor={inputId} className="block text-sm font-medium text-[color:var(--text-strong)] mb-1">
           {label}
         </label>
       )}
@@ -19,7 +19,7 @@ export function Input({ label, className, id, ...props }: InputProps) {
         {...props}
         id={inputId}
         className={clsx(
-          "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm shadow-sm placeholder:text-neutral-400 focus:border-brand focus:ring-1 focus:ring-brand",
+          "w-full rounded-md border border-[color:var(--line)] px-3 py-2 text-sm shadow-sm bg-[color:var(--bg-surface)] text-[color:var(--text-strong)] placeholder:text-[color:var(--text-muted)] focus:border-[color:var(--focus-ring)] focus:ring-1 focus:ring-[color:var(--focus-ring)] disabled:bg-[color:var(--disabled)] disabled:text-[color:var(--text-muted)]",
           className
         )}
       />

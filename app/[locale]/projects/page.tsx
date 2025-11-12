@@ -64,22 +64,22 @@ const communityCTA = (
   community: Community,
   t: (key: string, values?: Record<string, any>) => string
 ) => (
-  <Card key={community.id} className="overflow-hidden border-neutral-200 shadow-sm">
+  <Card key={community.id} className="overflow-hidden border-[color:var(--line)] shadow-sm">
     <CardContent className="p-6 space-y-4">
       <div className="flex items-center gap-2">
         <Badge color={community.scope === "global" ? "green" : "neutral"}>
           {community.scope === "global" ? t("community.scope.global") : t("community.scope.campaign")}
         </Badge>
-        <span className="text-xs text-neutral-500">{t("community.members", { count: community.memberCount })}</span>
+        <span className="text-xs text-[color:var(--text-muted)]">{t("community.members", { count: community.memberCount })}</span>
       </div>
       <div>
-        <h3 className="text-lg font-semibold">{community.name}</h3>
-        <p className="mt-2 text-sm text-neutral-700">{community.description}</p>
+        <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{community.name}</h3>
+        <p className="mt-2 text-sm text-[color:var(--text-muted)]">{community.description}</p>
       </div>
       {community.tags?.length ? (
-        <div className="flex flex-wrap gap-2 text-xs text-neutral-500">
+        <div className="flex flex-wrap gap-2 text-xs text-[color:var(--text-muted)]">
           {community.tags.map(tag => (
-            <span key={tag} className="rounded-full bg-neutral-100 px-2 py-1">#{tag}</span>
+            <span key={tag} className="rounded-full bg-[color:var(--bg-soft)] px-2 py-1">#{tag}</span>
           ))}
         </div>
       ) : null}
@@ -106,10 +106,10 @@ const renderProjectCard = (
   return (
     <Card
       key={project.id}
-      className="group overflow-hidden rounded-2xl border border-blue-100 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+      className="group overflow-hidden rounded-2xl border border-[color:var(--line)] shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
     >
       <CardContent className="p-0">
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-blue-50">
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-[color:var(--bg-soft)]">
           <Image
             src={coverImage}
             alt={`Imagen del proyecto ${project.name}`}
@@ -124,7 +124,7 @@ const renderProjectCard = (
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">{project.name}</h3>
-              <p className="text-sm text-neutral-500">{project.city}, {project.country}</p>
+              <p className="text-sm text-[color:var(--text-muted)]">{project.city}, {project.country}</p>
             </div>
             <Badge color={isPresale ? "green" : "neutral"}>{listingLabel(project.listingType, t)}</Badge>
           </div>
@@ -148,12 +148,12 @@ const renderProjectCard = (
 
           {isPresale && round ? (
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-neutral-600">
+              <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)]">
                 <span>{t("labels.progress")}</span>
                 <span>{percent}%</span>
               </div>
               <Progress value={percent} />
-              <div className="flex items-center justify-between text-xs text-neutral-500">
+              <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)]">
                 <span>{t("labels.deadline")}</span>
                 <span>{new Date(round.deadlineAt).toLocaleDateString(locale === "en" ? "en-US" : "es-MX", {
                   month: "short",
@@ -163,7 +163,7 @@ const renderProjectCard = (
             </div>
           ) : null}
 
-          <Link href={href} className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors">
+          <Link href={href} className="inline-flex items-center text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-primary-hover)] hover:underline transition-colors">
             {t("labels.openProject")}
           </Link>
         </div>
@@ -219,39 +219,39 @@ export default async function ProjectsPage({ params }: { params: Params }) {
 
       {/* Hero */}
       {heroProject && (
-        <section className="relative overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-900 text-white">
+        <section className="relative overflow-hidden rounded-3xl border border-[color:var(--line)] bg-[color:var(--text-strong)] text-[color:var(--text-inverse)]">
           <div className="absolute inset-0 opacity-40" style={{
             backgroundImage: heroProject.project.images?.[0] ? `url(${heroProject.project.images[0]})` : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center"
           }} />
-          <div className="relative z-10 grid gap-6 bg-gradient-to-br from-neutral-900/80 via-neutral-900/60 to-transparent p-10 md:grid-cols-2">
+          <div className="relative z-10 grid gap-6 bg-gradient-to-br from-[color:var(--text-strong)]/80 via-[color:var(--text-strong)]/60 to-transparent p-10 md:grid-cols-2">
             <div className="space-y-4">
               <Badge color="green">{t("hero.badge")}</Badge>
               <h1 className="text-3xl font-semibold md:text-4xl">{t("hero.title")}</h1>
-              <p className="text-sm text-neutral-200 md:text-base">{t("hero.subtitle")}</p>
+              <p className="text-sm text-[color:var(--text-inverse)]/80 md:text-base">{t("hero.subtitle")}</p>
               <div className="flex flex-wrap gap-3">
-                <Link href={heroPrimaryLink} className="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow hover:bg-neutral-100">
+                <Link href={heroPrimaryLink} className="inline-flex items-center rounded-md bg-[color:var(--bg-surface)] px-4 py-2 text-sm font-medium text-[color:var(--text-strong)] shadow hover:bg-[color:var(--bg-soft)]">
                   {t("hero.ctaPrimary")}
                 </Link>
-                <Link href={heroSecondaryLink} className="inline-flex items-center rounded-md border border-white/40 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
+                <Link href={heroSecondaryLink} className="inline-flex items-center rounded-md border border-[color:var(--text-inverse)]/40 px-4 py-2 text-sm font-medium text-[color:var(--text-inverse)] hover:bg-[color:var(--text-inverse)]/10">
                   {t("hero.ctaSecondary")}
                 </Link>
               </div>
             </div>
             <div className="grid gap-3 rounded-2xl bg-white/10 p-6 backdrop-blur">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-200">{t("hero.metrics.funding")}</span>
+                <span className="text-sm text-[color:var(--text-inverse)]/80">{t("hero.metrics.funding")}</span>
                 <span className="text-lg font-semibold">{heroProject.percent}%</span>
               </div>
               <Progress value={heroProject.percent} />
-              <div className="grid grid-cols-2 gap-3 text-xs text-neutral-100">
+              <div className="grid grid-cols-2 gap-3 text-xs text-[color:var(--text-inverse)]/90">
                 <div>
-                  <div className="uppercase tracking-wide text-neutral-300">{t("hero.metrics.stage")}</div>
+                  <div className="uppercase tracking-wide text-[color:var(--text-inverse)]/70">{t("hero.metrics.stage")}</div>
                   <div className="text-sm font-medium">{heroProject.project.stage ?? t("labels.stageUnknown")}</div>
                 </div>
                 <div>
-                  <div className="uppercase tracking-wide text-neutral-300">{t("hero.metrics.deposit")}</div>
+                  <div className="uppercase tracking-wide text-[color:var(--text-inverse)]/70">{t("hero.metrics.deposit")}</div>
                   <div className="text-sm font-medium">
                     {heroProject.round ? fmtCurrency(heroProject.round.depositAmount, heroProject.project.currency, locale) : t("labels.notApplicable")}
                   </div>
@@ -263,7 +263,7 @@ export default async function ProjectsPage({ params }: { params: Params }) {
       )}
 
       {/* Search */}
-      <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--bg-surface)] p-6 shadow-sm">
         <form className="grid gap-4 md:grid-cols-4">
           <Input placeholder={t("search.cityPlaceholder") as string} />
           <Select defaultValue="presale">
@@ -285,12 +285,12 @@ export default async function ProjectsPage({ params }: { params: Params }) {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-semibold">{t("sections.presaleHeading")}</h2>
-            <p className="text-sm text-neutral-600">{t("sections.presaleSubheading")}</p>
+            <p className="text-sm text-[color:var(--text-muted)]">{t("sections.presaleSubheading")}</p>
           </div>
           <Link href="/dashboard" className="text-sm font-medium text-brand hover:underline">{t("sections.viewDashboard")}</Link>
         </div>
         {presaleProjects.length === 0 ? (
-          <Card><CardContent className="py-8 text-center text-neutral-600">{t("sections.noPresale")}</CardContent></Card>
+          <Card><CardContent className="py-8 text-center text-[color:var(--text-muted)]">{t("sections.noPresale")}</CardContent></Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {presaleProjects.map(item => renderProjectCard(item, locale, t, `/p/${item.project.slug}`))}
@@ -303,12 +303,12 @@ export default async function ProjectsPage({ params }: { params: Params }) {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-semibold">{t("sections.saleHeading")}</h2>
-            <p className="text-sm text-neutral-600">{t("sections.saleSubheading")}</p>
+            <p className="text-sm text-[color:var(--text-muted)]">{t("sections.saleSubheading")}</p>
           </div>
           <Link href="/community" className="text-sm font-medium text-brand hover:underline">{t("sections.viewAll")}</Link>
         </div>
         {saleProjects.length === 0 ? (
-          <Card><CardContent className="py-8 text-center text-neutral-600">{t("sections.noSale")}</CardContent></Card>
+          <Card><CardContent className="py-8 text-center text-[color:var(--text-muted)]">{t("sections.noSale")}</CardContent></Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {saleProjects.map(item => renderProjectCard(item, locale, t, `/p/${item.project.slug}`))}
@@ -321,7 +321,7 @@ export default async function ProjectsPage({ params }: { params: Params }) {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-semibold">{t("sections.communityHeading")}</h2>
-            <p className="text-sm text-neutral-600">{t("sections.communitySubheading")}</p>
+            <p className="text-sm text-[color:var(--text-muted)]">{t("sections.communitySubheading")}</p>
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2">

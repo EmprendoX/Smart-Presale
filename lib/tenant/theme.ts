@@ -114,7 +114,8 @@ export function resolveTenantTheme(settings: TenantSettings | null): TenantTheme
 }
 
 export function buildCssVariables(theme: TenantTheme): Record<string, string> {
-  return {
+  // Mantener tokens --tenant-* para compatibilidad
+  const tenantVars = {
     "--tenant-primary": theme.palette.primary,
     "--tenant-primary-hover": theme.palette.primaryHover,
     "--tenant-primary-soft": theme.palette.primarySoft,
@@ -125,5 +126,24 @@ export function buildCssVariables(theme: TenantTheme): Record<string, string> {
     "--tenant-surface": theme.palette.surface,
     "--tenant-foreground": theme.palette.foreground,
     "--tenant-font-family": theme.fontFamily
+  };
+
+  // También establecer nuevos tokens --brand-* cuando hay tenant personalizado
+  const brandVars = {
+    "--brand-primary": theme.palette.primary,
+    "--brand-primary-hover": theme.palette.primaryHover,
+    "--brand-primary-active": theme.palette.primaryHover, // Usar hover como active si no hay específico
+    "--brand-accent": theme.palette.accent,
+    "--text-strong": theme.palette.foreground,
+    "--text-inverse": theme.palette.primaryForeground,
+    "--bg-base": theme.palette.background,
+    "--bg-surface": theme.palette.surface,
+    "--bg-soft": theme.palette.primarySoft,
+    "--focus-ring": theme.palette.primary
+  };
+
+  return {
+    ...tenantVars,
+    ...brandVars
   };
 }
