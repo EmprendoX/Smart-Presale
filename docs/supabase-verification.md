@@ -7,7 +7,7 @@
 
 ## Manual verification guidance
 
-Because the CLI cannot be used here, run the following commands from a workstation that has network access and is authenticated against the target Supabase project:
+Because the CLI cannot be used here, run the following commands from a workstation that has network access and is authenticated against the target Supabase project (see the [Supabase setup runbook](./runbooks/supabase-setup.md) for a complete checklist):
 
 ```bash
 supabase db push
