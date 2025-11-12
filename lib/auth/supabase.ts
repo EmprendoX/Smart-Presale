@@ -2,21 +2,45 @@ import { createClient, type Provider, type Session, type SupabaseClient, type Us
 import { createMiddlewareSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import type { NextRequest, NextResponse } from 'next/server';
 import type { Role, KycStatus } from '@/lib/types';
+import { getJsonAuthClient, updateDemoUser } from './json-auth';
 
 let browserClient: SupabaseClient | null = null;
 
+/**
+ * Verifica si Supabase está habilitado y configurado correctamente
+ */
+export function isSupabaseEnabled(): boolean {
+  const useSupabase = process.env.USE_SUPABASE === 'true';
+  if (!useSupabase) {
+    return false;
+  }
+  
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  return !!(url && anonKey);
+}
+
 function getSupabaseCredentials() {
+  if (!isSupabaseEnabled()) {
+    throw new Error('Supabase is not enabled. Set USE_SUPABASE=true and configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
-    throw new Error('Supabase credentials are not configured.');
+    throw new Error('Supabase credentials are not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
   }
 
   return { url, anonKey };
 }
 
 export const getSupabaseBrowserClient = (): SupabaseClient => {
+  if (!isSupabaseEnabled()) {
+    throw new Error('Supabase is not enabled. Cannot create Supabase client. Use JSON auth mode instead.');
+  }
+
   if (!browserClient) {
     const { url, anonKey } = getSupabaseCredentials();
     browserClient = createClient(url, anonKey, {
@@ -34,6 +58,10 @@ export const createSupabaseServerClient = (
   request: NextRequest,
   response: NextResponse
 ): SupabaseClient => {
+  if (!isSupabaseEnabled()) {
+    throw new Error('Supabase is not enabled. Cannot create Supabase server client. Use JSON auth mode instead.');
+  }
+  
   return createMiddlewareSupabaseClient({ req: request, res: response }) as unknown as SupabaseClient;
 };
 
@@ -153,6 +181,46 @@ const mapKycPersonalDataToProfile = (data: KycPersonalData) => ({
 });
 
 export const saveKycPersonalData = async (data: KycPersonalData) => {
+  // Modo JSON: actualizar usuario demo directamente
+  if (!isSupabaseEnabled()) {
+    const jsonClient = getJsonAuthClient();
+    const { data: sessionData } = await jsonClient.getSession();
+    
+    if (!sessionData.session?.user) {
+      throw new Error('Debe iniciar sesión para continuar con KYC.');
+    }
+
+    const userId = sessionData.session.user.id;
+    const fullName = `${data.firstName} ${data.lastName}`.trim();
+    
+    // Actualizar usuario demo con datos personales y cambiar kycStatus a 'basic'
+    const updatedUser = updateDemoUser(userId, {
+      fullName,
+      kycStatus: 'basic',
+      metadata: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        birthdate: data.birthdate,
+        country: data.country,
+        phone: data.phone,
+        addressLine1: data.addressLine1,
+        addressLine2: data.addressLine2,
+        city: data.city,
+        state: data.state,
+        postalCode: data.postalCode
+      }
+    });
+
+    if (!updatedUser) {
+      throw new Error('No se pudo actualizar el usuario.');
+    }
+
+    // Notificar cambio de estado para que el AuthProvider se actualice
+    await jsonClient.getSession();
+    return;
+  }
+
+  // Modo Supabase: usar Supabase normalmente
   const client = getSupabaseBrowserClient();
   const {
     data: { user },
@@ -191,6 +259,42 @@ export const saveKycPersonalData = async (data: KycPersonalData) => {
 };
 
 export const uploadKycDocument = async (document: KycDocument) => {
+  // Modo JSON: simular subida de documento y marcar como verificado
+  if (!isSupabaseEnabled()) {
+    const jsonClient = getJsonAuthClient();
+    const { data: sessionData } = await jsonClient.getSession();
+    
+    if (!sessionData.session?.user) {
+      throw new Error('Debe iniciar sesión para subir documentos.');
+    }
+
+    const userId = sessionData.session.user.id;
+    
+    // En modo JSON, solo simulamos la subida y marcamos como verificado
+    // No guardamos el archivo realmente, solo actualizamos el estado
+    const extension = document.file.name.split('.').pop();
+    const filePath = `mock/${userId}/${Date.now()}-${document.type}.${extension ?? 'bin'}`;
+    
+    // Actualizar usuario demo con kycStatus 'verified'
+    const updatedUser = updateDemoUser(userId, {
+      kycStatus: 'verified',
+      metadata: {
+        ...(sessionData.session.user.user_metadata || {}),
+        [`kyc_${document.type}_uploaded`]: true,
+        [`kyc_${document.type}_path`]: filePath
+      }
+    });
+
+    if (!updatedUser) {
+      throw new Error('No se pudo actualizar el usuario.');
+    }
+
+    // Notificar cambio de estado para que el AuthProvider se actualice
+    await jsonClient.getSession();
+    return filePath;
+  }
+
+  // Modo Supabase: usar Supabase normalmente
   const client = getSupabaseBrowserClient();
   const {
     data: { user },

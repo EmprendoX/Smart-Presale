@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/providers/AuthProvider';
@@ -11,17 +12,38 @@ import { KycDocument, KycPersonalData, saveKycPersonalData, uploadKycDocument } 
 export default function KycPage() {
   const t = useTranslations('auth.kyc');
   const { user, refreshSession } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialStep = useMemo(() => {
     const stepParam = searchParams?.get('step');
     if (stepParam === 'documents') return 2;
+    if (stepParam === 'personal') return 1;
+    // Si el usuario ya tiene datos básicos, empezar en paso 2
+    if (user?.kycStatus === 'basic') return 2;
+    // Por defecto, empezar en paso 1
     return 1;
-  }, [searchParams]);
+  }, [searchParams, user?.kycStatus]);
 
   const [step, setStep] = useState<number>(initialStep);
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Sincronizar step con searchParams y user.kycStatus
+  useEffect(() => {
+    const stepParam = searchParams?.get('step');
+    if (stepParam === 'documents') {
+      setStep(2);
+    } else if (stepParam === 'personal') {
+      setStep(1);
+    } else if (user?.kycStatus === 'basic' && !stepParam) {
+      // Solo redirigir a paso 2 si no hay stepParam y el usuario tiene kycStatus 'basic'
+      setStep(2);
+    } else if (!stepParam) {
+      // Por defecto, mostrar paso 1 si no hay stepParam
+      setStep(1);
+    }
+  }, [searchParams, user?.kycStatus]);
 
   const [personalData, setPersonalData] = useState<KycPersonalData>({
     firstName: '',
@@ -52,11 +74,21 @@ export default function KycPage() {
       await saveKycPersonalData(personalData);
       await refreshSession();
       setSuccessMessage(t('personalSuccess'));
-      setStep(2);
+      setSaving(false);
+      // Avanzar al paso 2 después de un breve delay para mostrar el mensaje
+      setTimeout(() => {
+        setStep(2);
+        // Actualizar URL sin recargar la página
+        if (typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.searchParams.set('step', 'documents');
+          window.history.pushState({}, '', url.toString());
+        }
+      }, 1000);
     } catch (error: any) {
       console.error('[KYC] personal data error', error);
-      setErrorMessage(error?.message ?? t('genericError'));
-    } finally {
+      const errorMessage = error?.message || error?.error?.message || t('genericError');
+      setErrorMessage(errorMessage);
       setSaving(false);
     }
   };
@@ -81,10 +113,22 @@ export default function KycPage() {
       await Promise.all(uploads);
       await refreshSession();
       setSuccessMessage(t('documentsSuccess'));
+      setSaving(false);
+      
+      // Redirigir después de un breve delay para que el usuario vea el mensaje de éxito
+      setTimeout(() => {
+        const roleHome: Record<string, string> = {
+          buyer: '/dashboard',
+          developer: '/dev',
+          admin: '/admin'
+        };
+        const redirectTo = roleHome[user?.role || 'buyer'] || '/dashboard';
+        router.push(redirectTo);
+      }, 2000);
     } catch (error: any) {
       console.error('[KYC] document upload error', error);
-      setErrorMessage(error?.message ?? t('genericError'));
-    } finally {
+      const errorMessage = error?.message || error?.error?.message || t('genericError');
+      setErrorMessage(errorMessage);
       setSaving(false);
     }
   };
@@ -107,11 +151,32 @@ export default function KycPage() {
 
       <div className="flex flex-col gap-6 md:flex-row">
         <div className="md:w-64 space-y-4">
-          <div className="rounded-lg border p-4">
+          <div 
+            className={`rounded-lg border p-4 cursor-pointer transition-colors ${step === 1 ? 'border-brand bg-brand/5' : 'border-neutral-200'} ${step >= 1 ? 'text-brand' : 'text-neutral-500'}`}
+            onClick={() => {
+              setStep(1);
+              if (typeof window !== 'undefined') {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('step');
+                url.searchParams.set('step', 'personal');
+                window.history.pushState({}, '', url.toString());
+              }
+            }}
+          >
             <p className={`text-sm font-medium ${step >= 1 ? 'text-brand' : 'text-neutral-500'}`}>{t('steps.personal')}</p>
             <p className="text-xs text-neutral-500">{t('steps.personalHint')}</p>
           </div>
-          <div className="rounded-lg border p-4">
+          <div 
+            className={`rounded-lg border p-4 cursor-pointer transition-colors ${step === 2 ? 'border-brand bg-brand/5' : 'border-neutral-200'} ${step >= 2 ? 'text-brand' : 'text-neutral-500'}`}
+            onClick={() => {
+              setStep(2);
+              if (typeof window !== 'undefined') {
+                const url = new URL(window.location.href);
+                url.searchParams.set('step', 'documents');
+                window.history.pushState({}, '', url.toString());
+              }
+            }}
+          >
             <p className={`text-sm font-medium ${step >= 2 ? 'text-brand' : 'text-neutral-500'}`}>{t('steps.documents')}</p>
             <p className="text-xs text-neutral-500">{t('steps.documentsHint')}</p>
           </div>

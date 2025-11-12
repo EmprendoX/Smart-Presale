@@ -97,7 +97,7 @@ export default async function LocaleLayout({
               <AuthProvider>
                 <ToastProvider>
                   <Navbar />
-                  <main className="container py-8">{children}</main>
+                  <main className="container py-8 overflow-x-hidden min-w-0">{children}</main>
                 </ToastProvider>
               </AuthProvider>
             </TenantProvider>

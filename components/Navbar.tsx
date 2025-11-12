@@ -89,25 +89,25 @@ export function Navbar() {
   };
 
   return (
-    <header className="border-b">
-      <div className="container flex items-center justify-between py-3">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-3 text-xl font-semibold text-brand">
+    <header className="border-b overflow-x-hidden">
+      <div className="container flex items-center justify-between py-3 min-w-0">
+        <div className="flex items-center gap-6 min-w-0 flex-shrink-0">
+          <Link href="/" className="flex items-center gap-3 text-xl font-semibold text-brand flex-shrink-0">
             {brandLogo ? (
               <img src={brandLogo} alt={brandName} className="h-8 w-auto" />
             ) : (
               <span className="leading-none">{brandName}</span>
             )}
           </Link>
-          <nav className="hidden md:flex items-center gap-4 text-sm">
-            <Link href="/" className="hover:underline">{t("projects")}</Link>
-            <Link href="/dashboard" className="hover:underline">{t("myReservations")}</Link>
-            <Link href="/dev" className="hover:underline">{t("devPanel")}</Link>
-            <Link href="/community" className="hover:underline">{t("communities")}</Link>
-            <Link href="/admin" className="hover:underline">{t("admin")}</Link>
+          <nav className="hidden md:flex items-center gap-4 text-sm flex-shrink-0">
+            <Link href="/" className="hover:underline whitespace-nowrap">{t("projects")}</Link>
+            <Link href="/dashboard" className="hover:underline whitespace-nowrap">{t("myReservations")}</Link>
+            <Link href="/dev" className="hover:underline whitespace-nowrap">{t("devPanel")}</Link>
+            <Link href="/community" className="hover:underline whitespace-nowrap">{t("communities")}</Link>
+            <Link href="/admin" className="hover:underline whitespace-nowrap">{t("admin")}</Link>
           </nav>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
           <Select value={locale} onChange={e => changeLanguage(e.target.value)} aria-label={t("language")}>
             <option value="es">{t("spanish")}</option>
             <option value="en">{t("english")}</option>

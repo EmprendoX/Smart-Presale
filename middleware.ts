@@ -2,7 +2,8 @@ import createIntlMiddleware from 'next-intl/middleware';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { routing } from './i18n/routing';
-import { createSupabaseServerClient, mapSupabaseUser } from '@/lib/auth/supabase';
+import { createSupabaseServerClient, mapSupabaseUser, isSupabaseEnabled } from '@/lib/auth/supabase';
+import { mapJsonUser, type AppUser } from '@/lib/auth/json-auth';
 
 type SupabaseTenant = {
   id: string;
@@ -63,25 +64,76 @@ function extractLocaleAndPath(pathname: string) {
   return { locale, relativePath };
 }
 
+/**
+ * Obtiene el usuario autenticado según el modo (Supabase o JSON)
+ */
+async function getAuthenticatedUser(request: NextRequest, response: NextResponse): Promise<AppUser | null> {
+  if (isSupabaseEnabled()) {
+    try {
+      const supabase = createSupabaseServerClient(request, response);
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+      return mapSupabaseUser(session?.user ?? null);
+    } catch (error) {
+      console.error('[middleware] Error getting Supabase session:', error);
+      return null;
+    }
+  } else {
+    // Modo JSON: leer sesión desde cookie
+    try {
+      const sessionCookie = request.cookies.get('sps_user');
+      if (!sessionCookie?.value) {
+        return null;
+      }
+      
+      let userId: string;
+      
+      // Intentar primero con decodeURIComponent (formato nuevo)
+      try {
+        userId = decodeURIComponent(sessionCookie.value);
+      } catch {
+        // Si falla, intentar con JSON.parse (formato legacy)
+        try {
+          userId = JSON.parse(sessionCookie.value);
+        } catch {
+          // Si ambos fallan, usar el valor directamente
+          userId = sessionCookie.value;
+        }
+      }
+      
+      return mapJsonUser(userId);
+    } catch (error) {
+      console.error('[middleware] Error reading JSON session:', error);
+      return null;
+    }
+  }
+}
+
 export default async function middleware(request: NextRequest) {
   const response = intlMiddleware(request);
 
   try {
-    const supabase = createSupabaseServerClient(request, response);
+    const { locale, relativePath } = extractLocaleAndPath(request.nextUrl.pathname);
 
-    const tenantSlug = await resolveTenantSlug(request);
-    const tenantData = await resolveTenantContext(supabase, tenantSlug);
+    // Resolver tenant (solo si Supabase está habilitado)
+    if (isSupabaseEnabled()) {
+      try {
+        const supabase = createSupabaseServerClient(request, response);
+        const tenantSlug = await resolveTenantSlug(request);
+        const tenantData = await resolveTenantContext(supabase, tenantSlug);
 
-    if (tenantData) {
-      persistTenantContext(response, tenantData);
+        if (tenantData) {
+          persistTenantContext(response, tenantData);
+        }
+      } catch (error) {
+        console.error('[middleware] Error resolving tenant (non-fatal):', error);
+        // No bloquear la request si falla el tenant
+      }
     }
 
-    const { locale, relativePath } = extractLocaleAndPath(request.nextUrl.pathname);
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
-
-    const user = mapSupabaseUser(session?.user ?? null);
+    // Obtener usuario autenticado (funciona en ambos modos)
+    const user = await getAuthenticatedUser(request, response);
 
     if (!user) {
       if (PROTECTED_ROUTES.some(route => relativePath.startsWith(route)) && !AUTH_ROUTES.includes(relativePath)) {
@@ -94,10 +146,15 @@ export default async function middleware(request: NextRequest) {
     const needsDocuments = user.kycStatus === 'basic';
     const requiresKyc = needsPersonalData || needsDocuments;
 
+    // Permitir acceso a KYC si el usuario está en esa ruta, incluso si tiene kycStatus 'verified'
+    // Esto permite que usuarios puedan completar o revisar su KYC si lo desean
     if (requiresKyc && !relativePath.startsWith('/kyc')) {
       const target = needsDocuments ? `/${locale}/kyc?step=documents` : `/${locale}/kyc`;
       return NextResponse.redirect(new URL(target, request.url));
     }
+    
+    // Si el usuario tiene kycStatus 'verified' y está en /kyc, permitir acceso (puede querer revisar)
+    // Pero no redirigir automáticamente a KYC si ya está verificado
 
     if (AUTH_ROUTES.includes(relativePath) && !requiresKyc) {
       const destination = ROLE_HOME[user.role] ?? '/dashboard';
@@ -110,6 +167,7 @@ export default async function middleware(request: NextRequest) {
     }
   } catch (error) {
     console.error('[middleware] Error handling auth redirect:', error);
+    // En caso de error, permitir que la request continúe
   }
 
   return response;
@@ -142,9 +200,12 @@ async function resolveTenantSlug(request: NextRequest): Promise<string> {
 }
 
 async function resolveTenantContext(
-  supabase: ReturnType<typeof createSupabaseServerClient>,
+  supabase: ReturnType<typeof createSupabaseServerClient> | null,
   slug: string
 ): Promise<{ tenant: SupabaseTenant; settings: SupabaseTenantSettings | null } | null> {
+  if (!supabase) {
+    return null;
+  }
   const { data: tenant, error } = await supabase
     .from('tenants')
     .select('id, slug, name, status, region, metadata, created_at, updated_at')

@@ -102,7 +102,7 @@ export default async function HomePage({ params }: { params: Params }) {
 
   return (
     <div className="space-y-12">
-      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[color:var(--bg-surface)] via-[color:var(--bg-soft)] to-[color:var(--bg-soft)] px-10 py-12 shadow-lg border border-[color:var(--line)]">
+      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[color:var(--bg-surface)] via-[color:var(--bg-soft)] to-[color:var(--bg-soft)] px-4 md:px-6 lg:px-10 py-12 shadow-lg border border-[color:var(--line)]">
         <div className="space-y-6">
           <div className="space-y-3">
             <h1 className="text-3xl font-semibold md:text-4xl text-[color:var(--brand-primary-hover)]">{t("hero.title")}</h1>
@@ -131,24 +131,28 @@ export default async function HomePage({ params }: { params: Params }) {
           <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.subtitle")}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <Card className="border-[color:var(--line)] shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="space-y-3 p-6">
-              <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{t("shortcuts.immediate.title")}</h3>
-              <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.immediate.description")}</p>
-              <Link href="/projects#sale" className="inline-flex text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-primary-hover)] hover:underline transition-colors">
-                {t("shortcuts.immediate.cta")}
-              </Link>
-            </CardContent>
-          </Card>
-          <Card className="border-[color:var(--line)] shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="space-y-3 p-6">
-              <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{t("shortcuts.presale.title")}</h3>
-              <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.presale.description")}</p>
-              <Link href="/projects#presale" className="inline-flex text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-primary-hover)] hover:underline transition-colors">
-                {t("shortcuts.presale.cta")}
-              </Link>
-            </CardContent>
-          </Card>
+          <div className="min-w-0">
+            <Card className="border-[color:var(--line)] shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="space-y-3 p-6">
+                <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{t("shortcuts.immediate.title")}</h3>
+                <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.immediate.description")}</p>
+                <Link href="/projects#sale" className="inline-flex text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-primary-hover)] hover:underline transition-colors">
+                  {t("shortcuts.immediate.cta")}
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="min-w-0">
+            <Card className="border-[color:var(--line)] shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="space-y-3 p-6">
+                <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{t("shortcuts.presale.title")}</h3>
+                <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.presale.description")}</p>
+                <Link href="/projects#presale" className="inline-flex text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-primary-hover)] hover:underline transition-colors">
+                  {t("shortcuts.presale.cta")}
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
@@ -181,7 +185,9 @@ export default async function HomePage({ params }: { params: Params }) {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {immediateListings.map(project => (
-              <ListingCard key={project.id} project={project} locale={locale} t={t} />
+              <div key={project.id} className="min-w-0">
+                <ListingCard project={project} locale={locale} t={t} />
+              </div>
             ))}
           </div>
         )}
@@ -201,7 +207,9 @@ export default async function HomePage({ params }: { params: Params }) {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {presaleListings.map(project => (
-              <ListingCard key={project.id} project={project} locale={locale} t={t} />
+              <div key={project.id} className="min-w-0">
+                <ListingCard project={project} locale={locale} t={t} />
+              </div>
             ))}
           </div>
         )}

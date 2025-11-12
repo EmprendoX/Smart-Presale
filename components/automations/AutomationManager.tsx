@@ -49,7 +49,7 @@ export function AutomationManager() {
     setLoading(true);
     const [automationRes, projectRes] = await Promise.all([
       api.listAutomations(),
-      fetch("/api/projects").then(res => res.json()).catch(() => ({ ok: false, data: [] }))
+      fetch("/api/projects", { credentials: "include" }).then(res => res.json()).catch(() => ({ ok: false, data: [] }))
     ]);
 
     if (automationRes.ok) {
@@ -224,7 +224,7 @@ export function AutomationManager() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge color={statusColors[automation.status]}>
-                        {t(`admin.automations.status.${automation.status}`)}
+                        {t(`status.${automation.status}`)}
                       </Badge>
                       <Button size="sm" variant="secondary" onClick={() => cycleStatus(automation)}>
                         {t("cycle")}

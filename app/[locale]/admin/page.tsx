@@ -129,7 +129,7 @@ export default function Admin() {
   const loadProjects = async () => {
     setLoadingProjects(true);
     try {
-      const res = await fetch("/api/projects").then(r => r.json());
+      const res = await fetch("/api/projects", { credentials: "include" }).then(r => r.json());
       if (res.ok) setProjects(res.data);
       else show(res.error, tMessages("error"));
     } catch (error: any) {
@@ -215,9 +215,12 @@ export default function Admin() {
     return (
       <div className="container py-8">
         <Card>
-          <CardContent className="py-8 text-center">
+          <CardContent className="py-8 text-center space-y-4">
             <p className="text-lg text-neutral-600">
               Debes iniciar sesión para acceder a este panel.
+            </p>
+            <p className="text-sm text-neutral-500">
+              Si estás en modo JSON, usa el usuario admin: u_admin_1
             </p>
             <Link href="/sign-up">
               <Button className="mt-4">Iniciar Sesión</Button>
@@ -303,7 +306,8 @@ export default function Admin() {
       const res = await fetch(`/api/projects/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ status }),
+        credentials: "include"
       }).then(r => r.json());
       if (!res.ok) throw new Error(res.error);
       show(t("messages.projectUpdated", { status: tStatus(status) }), tMessages("success"));
@@ -790,7 +794,8 @@ export default function Admin() {
       const res = await fetch("/api/communities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        credentials: "include"
       }).then(r => r.json());
 
       if (!res.ok) throw new Error(res.error || t("communities.form.error"));

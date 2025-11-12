@@ -28,10 +28,10 @@ export default function SecondaryMarketPanel({
 
   const load = async (uid: string) => {
     try {
-      const res = await fetch(`/api/secondary?projectId=${projectId}`).then(r => r.json());
+      const res = await fetch(`/api/secondary?projectId=${projectId}`, { credentials: "include" }).then(r => r.json());
       if (res.ok) setListings(res.data);
 
-      const my = await fetch(`/api/reservations?userId=${uid}`).then(r => r.json());
+      const my = await fetch(`/api/reservations?userId=${uid}`, { credentials: "include" }).then(r => r.json());
       if (my.ok) {
         const slots = (my.data as any[])
           .filter((r: any) => r.roundId === roundId && r.status === "confirmed")
@@ -65,7 +65,8 @@ export default function SecondaryMarketPanel({
     const res = await fetch("/api/secondary", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectId, roundId, sellerUserId: user.id, slots: sellSlots, ask, currency })
+      body: JSON.stringify({ projectId, roundId, sellerUserId: user.id, slots: sellSlots, ask, currency }),
+      credentials: "include"
     }).then(r => r.json());
 
     if (!res.ok) return show(res.error, tMessages("error"));
@@ -79,7 +80,8 @@ export default function SecondaryMarketPanel({
     const res = await fetch(`/api/secondary/${id}/fill`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ buyerUserId: user.id })
+      body: JSON.stringify({ buyerUserId: user.id }),
+      credentials: "include"
     }).then(r => r.json());
 
     if (!res.ok) return show(res.error, tMessages("error"));

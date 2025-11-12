@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Box-sizing global para prevenir overflow */
+* {
+  box-sizing: border-box;
+}
+
 /* SMART PRESALE — Tokens de color (LIGHT) */
 :root {
   /* Marca */
@@ -52,7 +57,12 @@ html, body, #__next {
   height: 100%;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
+  overflow-x: hidden;
   background-color: var(--bg-base);
   color: var(--text-strong);
   font-family: var(--tenant-font-family), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -60,7 +70,7 @@ body {
     radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--brand-primary) 8%, transparent), transparent 70%),
     radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--brand-accent) 10%, transparent), transparent 65%);
   background-attachment: fixed;
-  background-size: 1400px 1400px, 1200px 1200px;
+  background-size: clamp(800px, 100vw, 1400px) clamp(800px, 100vh, 1400px), clamp(600px, 90vw, 1200px) clamp(600px, 90vh, 1200px);
   @apply antialiased;
 }
 
@@ -103,12 +113,15 @@ body {
     background-image:
       radial-gradient(circle at 15% 10%, color-mix(in srgb, var(--brand-primary) 12%, transparent), transparent 65%),
       radial-gradient(circle at 80% 10%, color-mix(in srgb, var(--brand-accent) 10%, transparent), transparent 65%);
+    background-size: clamp(800px, 100vw, 1400px) clamp(800px, 100vh, 1400px), clamp(600px, 90vw, 1200px) clamp(600px, 90vh, 1200px);
     background-color: var(--bg-base);
   }
 }
 
 .container {
   @apply mx-auto max-w-6xl px-4;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 h1,h2,h3 { @apply font-semibold tracking-tight; }

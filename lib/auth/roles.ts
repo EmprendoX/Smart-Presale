@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient, mapSupabaseUser, type AppUser } from './supabase';
+import { createSupabaseServerClient, mapSupabaseUser, isSupabaseEnabled, type AppUser } from './supabase';
+import { mapJsonUser } from './json-auth';
 import { Role } from '@/lib/types';
 import { db } from '@/lib/config';
 
 const DEFAULT_TENANT_ID = process.env.DEFAULT_TENANT_ID ?? 'tenant_default';
 
 /**
- * Obtiene el usuario autenticado desde la sesión de Supabase
+ * Obtiene el usuario autenticado desde la sesión (Supabase o JSON según configuración)
  * Consulta primero la tabla app_users, y si no existe, la crea automáticamente
  * @param request Request de Next.js
  * @param response Response de Next.js (opcional, se crea si no se proporciona)
@@ -17,6 +18,45 @@ export async function getAuthenticatedUser(
   response?: NextResponse
 ): Promise<AppUser | null> {
   try {
+    // Modo JSON: leer cookie directamente
+    if (!isSupabaseEnabled()) {
+      const sessionCookie = request.cookies.get('sps_user');
+      if (!sessionCookie?.value) {
+        return null;
+      }
+      
+      try {
+        let userId: string;
+        
+        // Intentar primero con decodeURIComponent (formato nuevo)
+        try {
+          userId = decodeURIComponent(sessionCookie.value);
+        } catch {
+          // Si falla, intentar con JSON.parse (formato legacy)
+          try {
+            userId = JSON.parse(sessionCookie.value);
+          } catch {
+            // Si ambos fallan, usar el valor directamente
+            userId = sessionCookie.value;
+          }
+        }
+        
+        const appUser = mapJsonUser(userId);
+        
+        if (!appUser) {
+          console.warn('[getAuthenticatedUser] Usuario no encontrado:', userId);
+          return null;
+        }
+        
+        // Retornar AppUser directamente desde mapJsonUser
+        return appUser;
+      } catch (error) {
+        console.error('[getAuthenticatedUser] Error parsing JSON cookie:', error);
+        return null;
+      }
+    }
+    
+    // Modo Supabase: usar Supabase Auth
     // Crear respuesta temporal si no se proporciona
     const tempResponse = response || new NextResponse();
     const supabase = createSupabaseServerClient(request, tempResponse);

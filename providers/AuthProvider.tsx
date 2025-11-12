@@ -2,20 +2,14 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { Provider as OAuthProvider, Session } from '@supabase/supabase-js';
-import {
-  AppUser,
-  getSupabaseBrowserClient,
-  mapSupabaseUser,
-  signInWithOAuth as supabaseSignInWithOAuth,
-  signInWithOtp as supabaseSignInWithOtp,
-  signOut as supabaseSignOut
-} from '@/lib/auth/supabase';
+import { getAuthClient, isSupabaseEnabled, mapSupabaseUser, type AppUser } from '@/lib/auth';
+import { mapJsonUser } from '@/lib/auth/json-auth';
 
 type AuthContextValue = {
   user: AppUser | null;
   session: Session | null;
   loading: boolean;
-  signInWithOtp: (email: string, options?: { redirectTo?: string; shouldCreateUser?: boolean }) => Promise<void>;
+  signInWithOtp: (email: string, options?: { redirectTo?: string; shouldCreateUser?: boolean }) => Promise<{ autoAuthenticated?: boolean } | undefined>;
   signInWithOAuth: (
     provider: OAuthProvider,
     options?: {
@@ -33,11 +27,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const client = getSupabaseBrowserClient();
+  const [error, setError] = useState<string | null>(null);
+
+  // Obtener cliente de autenticación (funciona en ambos modos)
+  let client;
+  try {
+    client = getAuthClient();
+  } catch (err: any) {
+    console.error('[AuthProvider] Error initializing auth client:', err);
+    setError(err.message || 'Error al inicializar autenticación');
+    setLoading(false);
+  }
 
   useEffect(() => {
+    if (!client) {
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
     let loadingTimeoutRef: NodeJS.Timeout | null = null;
+    let unsubscribe: (() => void) | null = null;
 
     // Timeout de seguridad: si después de 5 segundos aún está cargando, forzar a false
     loadingTimeoutRef = setTimeout(() => {
@@ -49,7 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const loadSession = async () => {
       try {
-        console.log('[AuthProvider] Loading session...');
+        console.log('[AuthProvider] Loading session...', { mode: isSupabaseEnabled() ? 'Supabase' : 'JSON' });
         const [{ data, error }, userResult] = await Promise.all([
           client.auth.getSession(),
           client.auth.getUser()
@@ -69,16 +79,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
           if (userResult.error) {
             console.error('[AuthProvider] Error fetching user:', userResult.error.message);
-            setUser(mapSupabaseUser(data.session?.user ?? null));
+            // Mapear usuario según el modo
+            if (isSupabaseEnabled()) {
+              setUser(mapSupabaseUser(data.session?.user ?? null));
+            } else {
+              setUser(data.session?.user ? mapJsonUser(data.session.user.id) : null);
+            }
           } else {
-            setUser(mapSupabaseUser(userResult.data.user ?? null));
+            // Mapear usuario según el modo
+            if (isSupabaseEnabled()) {
+              setUser(mapSupabaseUser(userResult.data.user ?? null));
+            } else {
+              setUser(userResult.data.user ? mapJsonUser(userResult.data.user.id) : null);
+            }
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('[AuthProvider] Unexpected session error:', error);
         if (!isMounted) return;
         setSession(null);
         setUser(null);
+        setError(error.message || 'Error al cargar sesión');
       } finally {
         // SIEMPRE poner loading en false, sin importar qué pase
         if (isMounted) {
@@ -95,9 +116,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     loadSession();
 
-    const {
-      data: { subscription }
-    } = client.auth.onAuthStateChange(async (event, nextSession) => {
+    // Suscribirse a cambios de estado de autenticación
+    const subscription = client.auth.onAuthStateChange(async (event, nextSession) => {
       if (!isMounted) return;
       
       console.log('[AuthProvider] Auth state changed:', event, {
@@ -112,13 +132,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           const { data: userData, error: userError } = await client.auth.getUser();
           if (!userError && userData?.user) {
-            setUser(mapSupabaseUser(userData.user));
+            // Mapear según el modo
+            if (isSupabaseEnabled()) {
+              setUser(mapSupabaseUser(userData.user));
+            } else {
+              setUser(mapJsonUser(userData.user.id));
+            }
           } else {
-            setUser(mapSupabaseUser(nextSession.user));
+            // Mapear según el modo
+            if (isSupabaseEnabled()) {
+              setUser(mapSupabaseUser(nextSession.user));
+            } else {
+              setUser(mapJsonUser(nextSession.user.id));
+            }
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('[AuthProvider] Error fetching user on auth change:', error);
-          setUser(mapSupabaseUser(nextSession.user));
+          // Mapear según el modo
+          if (isSupabaseEnabled()) {
+            setUser(mapSupabaseUser(nextSession.user));
+          } else {
+            setUser(mapJsonUser(nextSession.user.id));
+          }
         }
       } else {
         setUser(null);
@@ -128,13 +163,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     });
 
+    unsubscribe = subscription.unsubscribe;
+
     // Cleanup: desmontar y limpiar recursos
     return () => {
       isMounted = false;
       if (loadingTimeoutRef) {
         clearTimeout(loadingTimeoutRef);
       }
-      subscription.unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, [client]);
 
@@ -144,17 +183,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       session,
       loading,
       signInWithOtp: async (email, options) => {
-        await supabaseSignInWithOtp(email, options);
+        if (!client) {
+          throw new Error('Cliente de autenticación no inicializado');
+        }
+        const result = await client.auth.signInWithOtp({ email, options });
+        if (result.error) {
+          throw result.error;
+        }
+        // Retornar información sobre autenticación automática si existe
+        return result.data;
       },
       signInWithOAuth: async (provider, options) => {
-        await supabaseSignInWithOAuth(provider, options);
+        if (!client) {
+          throw new Error('Cliente de autenticación no inicializado');
+        }
+        const result = await client.auth.signInWithOAuth({ provider, options });
+        if (result.error) {
+          throw result.error;
+        }
       },
       signOut: async () => {
-        await supabaseSignOut();
+        if (!client) {
+          setUser(null);
+          setSession(null);
+          return;
+        }
+        await client.auth.signOut();
         setUser(null);
         setSession(null);
       },
       refreshSession: async () => {
+        if (!client) {
+          console.warn('[AuthProvider] Cannot refresh session: client not initialized');
+          return;
+        }
         const [{ data, error }, userResult] = await Promise.all([
           client.auth.getSession(),
           client.auth.getUser()
@@ -168,14 +230,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(data.session ?? null);
         if (userResult.error) {
           console.error('[AuthProvider] Error refreshing user:', userResult.error.message);
-          setUser(mapSupabaseUser(data.session?.user ?? null));
+          // Mapear según el modo
+          if (isSupabaseEnabled()) {
+            setUser(mapSupabaseUser(data.session?.user ?? null));
+          } else {
+            setUser(data.session?.user ? mapJsonUser(data.session.user.id) : null);
+          }
         } else {
-          setUser(mapSupabaseUser(userResult.data.user ?? null));
+          // Mapear según el modo
+          if (isSupabaseEnabled()) {
+            setUser(mapSupabaseUser(userResult.data.user ?? null));
+          } else {
+            setUser(userResult.data.user ? mapJsonUser(userResult.data.user.id) : null);
+          }
         }
       }
     }),
     [client, loading, session, user]
   );
+
+  // Mostrar error en desarrollo si hay problemas de configuración
+  if (error && process.env.NODE_ENV === 'development') {
+    console.error('[AuthProvider] Configuration error:', error);
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

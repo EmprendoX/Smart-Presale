@@ -63,6 +63,7 @@
       "sendOtp": "Send access link",
       "sending": "Sending...",
       "otpSent": "Check your inbox for the access link.",
+      "autoAuthenticated": "Automatically signed in. Redirecting...",
       "genericError": "Something went wrong. Try again.",
       "oauthTitle": "Social login",
       "oauthDescription": "Use an existing account to get started faster.",

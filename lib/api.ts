@@ -14,16 +14,17 @@ const json = (res: Response) => res.json();
 export const api = {
   // Proyectos
   listProjects: async (): Promise<ApiResult<Project[]>> =>
-    fetch("/api/projects", { cache: "no-store" }).then(json),
+    fetch("/api/projects", { cache: "no-store", credentials: "include" }).then(json),
 
   getProject: async (idOrSlug: string): Promise<ApiResult<{ project: Project; round: Round | null }>> =>
-    fetch(`/api/projects/${idOrSlug}`, { cache: "no-store" }).then(json),
+    fetch(`/api/projects/${idOrSlug}`, { cache: "no-store", credentials: "include" }).then(json),
 
   publishProject: async (id: string): Promise<ApiResult<Project>> =>
     fetch(`/api/projects/${id}`, { 
       method: "PATCH", 
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "published" }) 
+      body: JSON.stringify({ status: "published" }),
+      credentials: "include"
     }).then(json),
 
   // Rondas
@@ -31,7 +32,8 @@ export const api = {
     fetch("/api/rounds", { 
       method: "POST", 
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input) 
+      body: JSON.stringify(input),
+      credentials: "include"
     }).then(json),
 
   // Reservas
@@ -41,16 +43,18 @@ export const api = {
     fetch("/api/reservations", { 
       method: "POST", 
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input) 
+      body: JSON.stringify(input),
+      credentials: "include"
     }).then(json),
 
   listMyReservations: async (userId: string): Promise<ApiResult<Reservation[]>> =>
-    fetch(`/api/reservations?userId=${encodeURIComponent(userId)}`, { cache: "no-store" }).then(json),
+    fetch(`/api/reservations?userId=${encodeURIComponent(userId)}`, { cache: "no-store", credentials: "include" }).then(json),
 
   refundReservation: async (id: string): Promise<ApiResult<Reservation>> =>
     fetch(`/api/reservations/${id}/refund`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
+      credentials: "include"
     }).then(json),
 
   // Pago simulado
@@ -68,7 +72,8 @@ export const api = {
     fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reservationId })
+      body: JSON.stringify({ reservationId }),
+      credentials: "include"
     }).then(json),
 
   // Cierre de ronda (simulado)
@@ -76,51 +81,56 @@ export const api = {
     fetch("/api/close-round", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ roundId })
+      body: JSON.stringify({ roundId }),
+      credentials: "include"
     }).then(json),
 
   // Automations
   listAutomations: async (): Promise<ApiResult<AutomationWorkflow[]>> =>
-    fetch("/api/automations", { cache: "no-store" }).then(json),
+    fetch("/api/automations", { cache: "no-store", credentials: "include" }).then(json),
 
   createAutomation: async (payload: Partial<AutomationWorkflow>): Promise<ApiResult<AutomationWorkflow>> =>
     fetch("/api/automations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      credentials: "include"
     }).then(json),
 
   updateAutomation: async (id: string, payload: Partial<AutomationWorkflow>): Promise<ApiResult<AutomationWorkflow>> =>
     fetch(`/api/automations/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      credentials: "include"
     }).then(json),
 
   // Agents
   listAgents: async (): Promise<ApiResult<IntelligentAgent[]>> =>
-    fetch("/api/agents", { cache: "no-store" }).then(json),
+    fetch("/api/agents", { cache: "no-store", credentials: "include" }).then(json),
 
   createAgent: async (payload: Partial<IntelligentAgent>): Promise<ApiResult<IntelligentAgent>> =>
     fetch("/api/agents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      credentials: "include"
     }).then(json),
 
   updateAgent: async (id: string, payload: Partial<IntelligentAgent>): Promise<ApiResult<IntelligentAgent>> =>
     fetch(`/api/agents/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      credentials: "include"
     }).then(json),
 
   // Communities
   listCommunities: async (): Promise<ApiResult<Community[]>> =>
-    fetch("/api/communities", { cache: "no-store" }).then(json),
+    fetch("/api/communities", { cache: "no-store", credentials: "include" }).then(json),
 
   getCommunity: async (slug: string): Promise<ApiResult<Community>> =>
-    fetch(`/api/communities/${slug}`, { cache: "no-store" }).then(json)
+    fetch(`/api/communities/${slug}`, { cache: "no-store", credentials: "include" }).then(json)
 };
 
 /**

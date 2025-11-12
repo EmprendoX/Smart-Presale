@@ -55,7 +55,8 @@ export function DocumentUploader({ projectId, uploadedBy, onDocumentAdded }: Doc
 
       const uploadRes = await fetch("/api/upload-document", {
         method: "POST",
-        body: formData
+        body: formData,
+        credentials: "include"
       });
 
       const uploadData = await uploadRes.json();
@@ -74,7 +75,8 @@ export function DocumentUploader({ projectId, uploadedBy, onDocumentAdded }: Doc
           url: uploadData.url,
           fileName: uploadData.fileName,
           uploadedBy
-        })
+        }),
+        credentials: "include"
       });
 
       const docData = await docRes.json();

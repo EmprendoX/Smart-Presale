@@ -158,9 +158,12 @@ export default function DevPanel() {
     return (
       <div className="container py-8">
         <Card>
-          <CardContent className="py-8 text-center">
+          <CardContent className="py-8 text-center space-y-4">
             <p className="text-lg text-neutral-600">
               Debes iniciar sesión para acceder a este panel.
+            </p>
+            <p className="text-sm text-neutral-500">
+              Si estás en modo JSON, usa uno de los usuarios demo: u_buyer_1, u_dev_1, u_admin_1
             </p>
             <Link href="/sign-up">
               <Button className="mt-4">Iniciar Sesión</Button>
@@ -193,7 +196,7 @@ export default function DevPanel() {
     if (!projectId) return;
     setLoadingDocuments(true);
     try {
-      const res = await fetch(`/api/documents?projectId=${projectId}`).then(r => r.json());
+      const res = await fetch(`/api/documents?projectId=${projectId}`, { credentials: "include" }).then(r => r.json());
       if (res.ok) {
         setDocuments(res.data || []);
       }
@@ -207,7 +210,7 @@ export default function DevPanel() {
   const handleDeleteDocument = async (id: string) => {
     if (!confirm(t("deleteDocumentConfirm"))) return;
     try {
-      const res = await fetch(`/api/documents/${id}`, { method: "DELETE" }).then(r => r.json());
+      const res = await fetch(`/api/documents/${id}`, { method: "DELETE", credentials: "include" }).then(r => r.json());
       if (!res.ok) throw new Error(res.error);
       show(t("documentDeleted"), tMessages("success"));
       if (editingProject) {
@@ -357,7 +360,8 @@ export default function DevPanel() {
         const res = await fetch(`/api/projects/${projectId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(projectData)
+          body: JSON.stringify(projectData),
+          credentials: "include"
         }).then(r => r.json());
 
         if (!res.ok) throw new Error(res.error);
@@ -370,7 +374,8 @@ export default function DevPanel() {
             ...projectData,
             listingType: pListingType,
             developerId: devId
-          })
+          }),
+          credentials: "include"
         }).then(r => r.json());
 
         if (!res.ok) throw new Error(res.error);
@@ -394,7 +399,8 @@ export default function DevPanel() {
         const round = await fetch("/api/rounds", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(roundData)
+          body: JSON.stringify(roundData),
+          credentials: "include"
         }).then(r => r.json());
 
         if (!round.ok) throw new Error(round.error);

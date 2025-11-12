@@ -51,9 +51,19 @@ export default function SignUpPage() {
       const redirectTo = typeof window !== 'undefined' 
         ? `${window.location.origin}/auth/callback?locale=${locale}&next=/dashboard`
         : undefined;
-      await signInWithOtp(email, { redirectTo });
-      setStatus('sent');
-      setMessage(t('otpSent'));
+      const result = await signInWithOtp(email, { redirectTo });
+      
+      // Verificar si fue autenticación automática (modo JSON)
+      if (result?.autoAuthenticated) {
+        setStatus('sent');
+        setMessage(t('autoAuthenticated'));
+        // En modo JSON, el usuario ya está autenticado, refrescar sesión para que el useEffect detecte el cambio
+        await refreshSession();
+      } else {
+        // Modo Supabase: se envió el email
+        setStatus('sent');
+        setMessage(t('otpSent'));
+      }
     } catch (error: any) {
       console.error('[SignUp] OTP error', error);
       setStatus('error');

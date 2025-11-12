@@ -225,7 +225,7 @@ export default async function ProjectsPage({ params }: { params: Params }) {
             backgroundSize: "cover",
             backgroundPosition: "center"
           }} />
-          <div className="relative z-10 grid gap-6 bg-gradient-to-br from-[color:var(--text-strong)]/80 via-[color:var(--text-strong)]/60 to-transparent p-10 md:grid-cols-2">
+          <div className="relative z-10 grid gap-6 bg-gradient-to-br from-[color:var(--text-strong)]/80 via-[color:var(--text-strong)]/60 to-transparent p-4 md:p-6 lg:p-10 md:grid-cols-2">
             <div className="space-y-4">
               <Badge color="green">{t("hero.badge")}</Badge>
               <h1 className="text-3xl font-semibold md:text-4xl">{t("hero.title")}</h1>
@@ -263,7 +263,7 @@ export default async function ProjectsPage({ params }: { params: Params }) {
       )}
 
       {/* Search */}
-      <section className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--bg-surface)] p-6 shadow-sm">
+      <section className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--bg-surface)] p-4 md:p-6 shadow-sm">
         <form className="grid gap-4 md:grid-cols-4">
           <Input placeholder={t("search.cityPlaceholder") as string} />
           <Select defaultValue="presale">
@@ -293,7 +293,11 @@ export default async function ProjectsPage({ params }: { params: Params }) {
           <Card><CardContent className="py-8 text-center text-[color:var(--text-muted)]">{t("sections.noPresale")}</CardContent></Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {presaleProjects.map(item => renderProjectCard(item, locale, t, `/p/${item.project.slug}`))}
+            {presaleProjects.map(item => (
+              <div key={item.project.id} className="min-w-0">
+                {renderProjectCard(item, locale, t, `/p/${item.project.slug}`)}
+              </div>
+            ))}
           </div>
         )}
       </section>
@@ -311,7 +315,11 @@ export default async function ProjectsPage({ params }: { params: Params }) {
           <Card><CardContent className="py-8 text-center text-[color:var(--text-muted)]">{t("sections.noSale")}</CardContent></Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {saleProjects.map(item => renderProjectCard(item, locale, t, `/p/${item.project.slug}`))}
+            {saleProjects.map(item => (
+              <div key={item.project.id} className="min-w-0">
+                {renderProjectCard(item, locale, t, `/p/${item.project.slug}`)}
+              </div>
+            ))}
           </div>
         )}
       </section>
@@ -325,8 +333,16 @@ export default async function ProjectsPage({ params }: { params: Params }) {
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
-          {globalCommunity ? communityCTA(globalCommunity, t) : null}
-          {campaignCommunities.map(community => communityCTA(community, t))}
+          {globalCommunity ? (
+            <div key={globalCommunity.id} className="min-w-0">
+              {communityCTA(globalCommunity, t)}
+            </div>
+          ) : null}
+          {campaignCommunities.map(community => (
+            <div key={community.id} className="min-w-0">
+              {communityCTA(community, t)}
+            </div>
+          ))}
         </div>
       </section>
     </div>

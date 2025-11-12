@@ -63,6 +63,7 @@
       "sendOtp": "Enviar enlace de acceso",
       "sending": "Enviando...",
       "otpSent": "Te enviamos un correo con tu enlace de acceso.",
+      "autoAuthenticated": "Sesión iniciada automáticamente. Redirigiendo...",
       "genericError": "Ocurrió un error. Inténtalo de nuevo.",
       "oauthTitle": "Redes sociales",
       "oauthDescription": "Conecta una de tus cuentas existentes para empezar.",
