@@ -8,6 +8,8 @@ import { Modal } from "@/components/ui/Modal";
 import { Progress } from "@/components/ui/Progress";
 import { fmtCurrency } from "@/lib/format";
 import { Currency } from "@/lib/types";
+import { Toast } from "@/components/ui/Toast";
+import { EventRecord, useEventLog } from "@/frontend/src/utils/event-log";
 import {
   LocalPaymentMethod,
   LocalReservationPayment,
@@ -83,6 +85,8 @@ export function ReservationCheckout({
     tarjeta: "",
     transferencia: ""
   });
+  const { addEvent } = useEventLog({ audience: "buyer", roundId });
+  const [toasts, setToasts] = useState<EventRecord[]>([]);
 
   const paymentStatusLabels: Record<LocalPaymentStatus, string> = {
     pendiente: "Pendiente de conciliación",
@@ -94,10 +98,55 @@ export function ReservationCheckout({
     transferencia: "Transferencia"
   };
 
+  const pushToast = (event?: EventRecord) => {
+    if (!event) return;
+    setToasts(prev => [...prev, event]);
+  };
+
+  const dismissToast = (id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (progressPercent >= 80) {
+      pushToast(addEvent(roundId, "progress_80"));
+    }
+  }, [addEvent, progressPercent, roundId]);
+
+  useEffect(() => {
+    const remaining = new Date(deadline).getTime() - now;
+    if (remaining <= 72 * 60 * 60 * 1000 && remaining > 0) {
+      pushToast(addEvent(roundId, "deadline_72h"));
+    }
+  }, [addEvent, deadline, now, roundId]);
+
+  useEffect(() => {
+    if (roundStatus === "no_cumplida") {
+      pushToast(addEvent(roundId, "goal_failed"));
+    }
+  }, [addEvent, roundId, roundStatus]);
+
+  useEffect(() => {
+    if (reservation.status === "confirmada") {
+      pushToast(addEvent(roundId, "reservation_confirmed"));
+    }
+
+    if (reservation.status === "reembolsada") {
+      pushToast(addEvent(roundId, "reservation_refunded"));
+    }
+  }, [addEvent, reservation.status, roundId]);
+
+  useEffect(() => {
+    if (toasts.length === 0) return;
+
+    const timers = toasts.map(toast => window.setTimeout(() => dismissToast(toast.id), 5200));
+    return () => timers.forEach(timer => window.clearTimeout(timer));
+  }, [toasts]);
 
   const handleSlotChange = (value: number) => {
     const normalized = Number.isFinite(value) ? Math.max(1, Math.round(value)) : 1;
@@ -184,8 +233,9 @@ export function ReservationCheckout({
   };
 
   return (
-    <Card className="border-[color:var(--line)]">
-      <CardContent className="space-y-5 p-5">
+    <>
+      <Card className="border-[color:var(--line)]">
+        <CardContent className="space-y-5 p-5">
         <div className={`rounded-lg border px-3 py-2 text-sm ${roundStatusColor[roundStatus]}`}>
           <p className="font-semibold">{statusCopy[roundStatus].title}</p>
           <p className="text-xs opacity-80">{statusCopy[roundStatus].body}</p>
@@ -297,62 +347,71 @@ export function ReservationCheckout({
           La reserva se almacena localmente por ronda. Puedes seguir editando los cupos y, una vez listo, confirmar la operación
           con tarjeta o transferencia simulada y conciliar el pago manualmente.
         </p>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
 
-    <Modal open={isPaymentModalOpen} title="Simular pago" onClose={() => setPaymentModalOpen(false)}>
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-[color:var(--text-strong)]">1. Selecciona el método</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {(["tarjeta", "transferencia"] as LocalPaymentMethod[]).map(method => (
-              <button
-                key={method}
-                className={`rounded border px-3 py-2 text-left ${
-                  selectedPaymentMethod === method
-                    ? "border-[color:var(--text-strong)] bg-[color:var(--bg-soft)]"
-                    : "border-[color:var(--line)]"
-                }`}
-                onClick={() => setSelectedPaymentMethod(method)}
-              >
-                <p className="text-sm font-semibold text-[color:var(--text-strong)]">{paymentMethodLabels[method]}</p>
+      <div className="pointer-events-none fixed right-4 top-4 z-50 space-y-2">
+        {toasts.map(toast => (
+          <div key={toast.id} className="pointer-events-auto">
+            <Toast title={toast.title} description={toast.description} onClose={() => dismissToast(toast.id)} />
+          </div>
+        ))}
+      </div>
+
+      <Modal open={isPaymentModalOpen} title="Simular pago" onClose={() => setPaymentModalOpen(false)}>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-[color:var(--text-strong)]">1. Selecciona el método</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {(["tarjeta", "transferencia"] as LocalPaymentMethod[]).map(method => (
+                <button
+                  key={method}
+                  className={`rounded border px-3 py-2 text-left ${
+                    selectedPaymentMethod === method
+                      ? "border-[color:var(--text-strong)] bg-[color:var(--bg-soft)]"
+                      : "border-[color:var(--line)]"
+                  }`}
+                  onClick={() => setSelectedPaymentMethod(method)}
+                >
+                  <p className="text-sm font-semibold text-[color:var(--text-strong)]">{paymentMethodLabels[method]}</p>
+                  <p className="text-xs text-[color:var(--text-muted)]">
+                    {method === "tarjeta"
+                      ? "Genera un Payment Intent simulado"
+                      : "Obtén una referencia única para tu transferencia"}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-[color:var(--text-strong)]">2. Detalles</p>
+            {selectedPaymentMethod === "tarjeta" && (
+              <div className="rounded border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-3 text-sm">
+                <p className="font-semibold">Payment Intent generado</p>
+                <p className="text-xs text-[color:var(--text-muted)]">ID: {draftTxIds.tarjeta}</p>
+                <p className="text-xs text-[color:var(--text-muted)]">El pago se confirmará automáticamente.</p>
+              </div>
+            )}
+            {selectedPaymentMethod === "transferencia" && (
+              <div className="rounded border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-3 text-sm">
+                <p className="font-semibold">Referencia única</p>
+                <p className="text-xs text-[color:var(--text-muted)]">Usa este ID al transferir: {draftTxIds.transferencia}</p>
                 <p className="text-xs text-[color:var(--text-muted)]">
-                  {method === "tarjeta"
-                    ? "Genera un Payment Intent simulado"
-                    : "Obtén una referencia única para tu transferencia"}
+                  El pago quedará pendiente hasta que confirmes manualmente la conciliación.
                 </p>
-              </button>
-            ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setPaymentModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSimulatePayment}>Confirmar método</Button>
           </div>
         </div>
-
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-[color:var(--text-strong)]">2. Detalles</p>
-          {selectedPaymentMethod === "tarjeta" && (
-            <div className="rounded border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-3 text-sm">
-              <p className="font-semibold">Payment Intent generado</p>
-              <p className="text-xs text-[color:var(--text-muted)]">ID: {draftTxIds.tarjeta}</p>
-              <p className="text-xs text-[color:var(--text-muted)]">El pago se confirmará automáticamente.</p>
-            </div>
-          )}
-          {selectedPaymentMethod === "transferencia" && (
-            <div className="rounded border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-3 text-sm">
-              <p className="font-semibold">Referencia única</p>
-              <p className="text-xs text-[color:var(--text-muted)]">Usa este ID al transferir: {draftTxIds.transferencia}</p>
-              <p className="text-xs text-[color:var(--text-muted)]">
-                El pago quedará pendiente hasta que confirmes manualmente la conciliación.
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={() => setPaymentModalOpen(false)}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSimulatePayment}>Confirmar método</Button>
-        </div>
-      </div>
-    </Modal>
+      </Modal>
+    </>
   );
 }

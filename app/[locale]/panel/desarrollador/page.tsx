@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/Select";
 import { Progress } from "@/components/ui/Progress";
 import { Link } from "@/i18n/routing";
 import { BarChart } from "@/components/charts/BarChart";
+import { useEventLog } from "@/frontend/src/utils/event-log";
 
 const buyerOriginsSeed = [
   { label: "CDMX", value: 24, color: "#0ea5e9" },
@@ -27,6 +28,7 @@ export default function DeveloperPanelPage({ params }: { params: { locale: strin
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { events: adminEvents } = useEventLog({ audience: "admin" });
 
   const developerOptions = useMemo(() => {
     const byId = new Map<string, string>();
@@ -65,6 +67,8 @@ export default function DeveloperPanelPage({ params }: { params: { locale: strin
       };
     });
   }, [locale]);
+
+  const recentEvents = useMemo(() => adminEvents.slice(0, 8), [adminEvents]);
 
   const handleDeveloperChange = (developerId: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -184,6 +188,45 @@ export default function DeveloperPanelPage({ params }: { params: { locale: strin
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-[color:var(--line)]">
+        <CardHeader className="flex flex-col gap-1">
+          <p className="text-xs font-semibold uppercase text-[color:var(--text-muted)]">Alertas</p>
+          <h2 className="text-lg font-semibold text-[color:var(--text-strong)]">Bitácora de eventos locales</h2>
+          <p className="text-sm text-[color:var(--text-muted)]">
+            Registro temporal de hitos generados por las reservas almacenadas en el navegador.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {recentEvents.length === 0 ? (
+            <p className="text-sm text-[color:var(--text-muted)]">Aún no hay eventos registrados.</p>
+          ) : (
+            recentEvents.map(event => (
+              <div
+                key={event.id}
+                className="flex items-start justify-between rounded border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-3"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge color="neutral">{event.title}</Badge>
+                    <span className="text-xs text-[color:var(--text-muted)]">
+                      {new Date(event.timestamp).toLocaleString(locale === "en" ? "en-US" : "es-MX", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[color:var(--text-strong)]">{event.description}</p>
+                  <p className="text-xs text-[color:var(--text-muted)]">Ronda: {event.roundId}</p>
+                </div>
+                <span className="text-xs font-semibold uppercase text-[color:var(--brand-primary)]">{event.type}</span>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="border-[color:var(--line)]">
         <CardHeader className="flex flex-col gap-1">
