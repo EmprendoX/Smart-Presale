@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { Progress } from "@/components/ui/Progress";
 import { fmtCurrency } from "@/lib/format";
 import { Currency } from "@/lib/types";
-import { LocalReservationStatus, useReservations } from "@/frontend/src/hooks/useReservations";
+import { LocalReservationStatus, RoundStatus, useReservations } from "@/frontend/src/hooks/useReservations";
 
 const formatCountdown = (msRemaining: number) => {
   const totalSeconds = Math.max(0, Math.floor(msRemaining / 1000));
@@ -37,6 +37,9 @@ export type ReservationCheckoutProps = {
   deadline: string;
   locale: string;
   defaultSlots?: number;
+  goalType?: "amount" | "reservations";
+  currentSlots?: number;
+  rule?: "todo-nada" | "parcial";
 };
 
 export function ReservationCheckout({
@@ -47,9 +50,24 @@ export function ReservationCheckout({
   currency,
   deadline,
   locale,
-  defaultSlots = 1
+  defaultSlots = 1,
+  goalType = "amount",
+  currentSlots,
+  rule = "todo-nada"
 }: ReservationCheckoutProps) {
-  const { reservation, setSlots, setStatus } = useReservations(roundId, { slots: defaultSlots });
+  const { reservation, setSlots, setStatus, roundStatus, progressPercent, progressValue } = useReservations(
+    roundId,
+    {
+      goalType,
+      goalValue: goal,
+      raised,
+      deadline,
+      depositAmount,
+      currentSlots,
+      rule
+    },
+    { slots: defaultSlots }
+  );
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -68,18 +86,49 @@ export function ReservationCheckout({
   };
 
   const effectiveRaised = useMemo(() => {
-    if (reservation.status === "reembolsada") return raised;
-    return raised + reservation.slots * depositAmount;
-  }, [depositAmount, raised, reservation.slots, reservation.status]);
+    if (goalType === "reservations") return progressValue;
+    return progressValue;
+  }, [goalType, progressValue]);
 
-  const progressPercent = Math.min(Math.round((effectiveRaised / goal) * 100), 100);
+  const progressLabel = goalType === "reservations" ? `${progressValue} / ${goal} reservaciones` : undefined;
   const totalDeposit = reservation.slots * depositAmount;
   const deadlineDate = new Date(deadline);
   const countdown = formatCountdown(deadlineDate.getTime() - now);
 
+  const roundStatusColor: Record<RoundStatus, string> = {
+    en_progreso: "bg-[color:var(--bg-soft)] border-[color:var(--line)] text-[color:var(--text-strong)]",
+    parcial: "bg-amber-50 border-amber-200 text-amber-900",
+    cumplida: "bg-emerald-50 border-emerald-200 text-emerald-900",
+    no_cumplida: "bg-red-50 border-red-200 text-red-900"
+  };
+
+  const statusCopy: Record<RoundStatus, { title: string; body: string }> = {
+    en_progreso: {
+      title: "Ronda en progreso",
+      body: "Aún puedes editar tu reserva antes de confirmar el siguiente paso."
+    },
+    parcial: {
+      title: "Avance parcial mínimo alcanzado",
+      body: "Se superó el 70% requerido para continuar con el plan parcial. Los depósitos se mantienen vigentes."
+    },
+    cumplida: {
+      title: "Meta de la ronda cumplida",
+      body: "Tu reserva continúa con el flujo. Prepara el contrato de promesa."
+    },
+    no_cumplida: {
+      title: "Ronda no alcanzó la meta",
+      body: "La fecha límite expiró sin llegar al umbral. Tu depósito fue marcado para reembolso."
+    }
+  };
+
   return (
     <Card className="border-[color:var(--line)]">
       <CardContent className="space-y-5 p-5">
+        <div className={`rounded-lg border px-3 py-2 text-sm ${roundStatusColor[roundStatus]}`}>
+          <p className="font-semibold">{statusCopy[roundStatus].title}</p>
+          <p className="text-xs opacity-80">{statusCopy[roundStatus].body}</p>
+        </div>
+
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <p className="text-xs font-semibold uppercase text-[color:var(--text-muted)]">Estado de mi reserva</p>
@@ -106,7 +155,12 @@ export function ReservationCheckout({
           </div>
           <Progress value={progressPercent} />
           <p className="text-xs text-[color:var(--text-muted)]">
-            Incluye tu reserva: {fmtCurrency(effectiveRaised, currency, locale)} / {fmtCurrency(goal, currency, locale)}
+            {goalType === "amount" && (
+              <>
+                Incluye tu reserva: {fmtCurrency(effectiveRaised, currency, locale)} / {fmtCurrency(goal, currency, locale)}
+              </>
+            )}
+            {goalType === "reservations" && progressLabel}
           </p>
         </div>
 
@@ -137,9 +191,16 @@ export function ReservationCheckout({
             value={reservation.slots}
             onChange={event => handleSlotChange(parseInt(event.target.value || "1", 10))}
           />
-          <Button onClick={confirmReservation} disabled={reservation.slots <= 0 || reservation.status === "confirmada"}>
-            {reservation.status === "confirmada" ? "Reserva confirmada" : "Confirmar reserva"}
-          </Button>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <Button onClick={confirmReservation} disabled={reservation.slots <= 0 || reservation.status === "confirmada"}>
+              {reservation.status === "confirmada" ? "Reserva confirmada" : "Confirmar reserva"}
+            </Button>
+            {roundStatus === "cumplida" && (
+              <Button variant="secondary" className="w-full sm:w-auto">
+                Contrato de promesa (próximamente)
+              </Button>
+            )}
+          </div>
         </div>
 
         <p className="text-xs text-[color:var(--text-muted)]">
