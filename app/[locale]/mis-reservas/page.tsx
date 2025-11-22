@@ -7,14 +7,13 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { fmtCurrency } from "@/lib/format";
 import { projectsData, type ProjectShowcase } from "@/data/projects";
 import { type LocalReservation } from "@/frontend/src/hooks/useReservations";
+import { EventRecord, useEventLog } from "@/frontend/src/utils/event-log";
 
 type ReservationRecord = {
   roundId: string;
   reservation: LocalReservation;
   project?: ProjectShowcase;
 };
-
-type NotificationEvent = "pago" | "umbral" | "cierre" | "expiracion";
 
 const STORAGE_KEY = "sps_reservations";
 const REFUND_WINDOW_HOURS = 48;
@@ -26,24 +25,6 @@ const statusStyle: Record<LocalReservation["status"], { label: string; color: "n
   reembolsada: { label: "Reembolsada", color: "warning" }
 };
 
-const notificationLabels: Record<NotificationEvent, { title: string; description: string }> = {
-  pago: {
-    title: "Pago aplicado",
-    description: "Tu depósito quedó registrado y enrutado al fideicomiso."
-  },
-  umbral: {
-    title: "Umbral alcanzado",
-    description: "La ronda superó el 70% requerido para avanzar al plan parcial."
-  },
-  cierre: {
-    title: "Cierre técnico",
-    description: "Se bloqueó la edición de cupos mientras se procesan los contratos."
-  },
-  expiracion: {
-    title: "Fecha límite expirada",
-    description: "Se marcó la reserva para reembolso al no cumplirse la meta."
-  }
-};
 
 const readStorage = (): ReservationRecord[] => {
   if (typeof window === "undefined") return [];
@@ -79,23 +60,6 @@ const persistStorage = (records: ReservationRecord[]) => {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 };
 
-const buildNotifications = (record: ReservationRecord) => {
-  const baseTime = record.reservation.timestamp;
-  const deadline = record.project ? new Date(record.project.deadline).getTime() : Date.now();
-
-  const events: { type: NotificationEvent; at: number }[] = [
-    { type: "pago", at: baseTime + 5 * 60 * 1000 },
-    { type: "umbral", at: baseTime + 12 * 60 * 60 * 1000 },
-    { type: "cierre", at: deadline - 6 * 60 * 60 * 1000 },
-    { type: "expiracion", at: deadline }
-  ];
-
-  return events.map(event => ({
-    ...event,
-    title: notificationLabels[event.type].title,
-    description: notificationLabels[event.type].description
-  }));
-};
 
 const formatDateTime = (value: number, locale: string) => {
   return new Date(value).toLocaleString(locale === "en" ? "en-US" : "es-MX", {
@@ -109,6 +73,18 @@ const formatDateTime = (value: number, locale: string) => {
 export default function MisReservasPage({ params }: { params: { locale: string } }) {
   const { locale } = params;
   const [records, setRecords] = useState<ReservationRecord[]>([]);
+  const { events } = useEventLog({ audience: "buyer" });
+
+  const eventsByRound = useMemo(() => {
+    const grouped = new Map<string, EventRecord[]>();
+
+    events.forEach(event => {
+      const current = grouped.get(event.roundId) ?? [];
+      grouped.set(event.roundId, [...current, event].sort((a, b) => b.timestamp - a.timestamp));
+    });
+
+    return grouped;
+  }, [events]);
 
   useEffect(() => {
     setRecords(readStorage());
@@ -176,7 +152,7 @@ export default function MisReservasPage({ params }: { params: { locale: string }
             const refundWindowEnds = deadlineTime + REFUND_WINDOW_HOURS * 60 * 60 * 1000;
             const inRefundWindow = project ? Date.now() <= refundWindowEnds : false;
             const totalDeposit = project ? project.deposit * record.reservation.slots : 0;
-            const notifications = buildNotifications(record);
+            const notifications = eventsByRound.get(record.roundId) ?? [];
 
             return (
               <Card key={record.roundId} className="border-[color:var(--line)]">
@@ -236,27 +212,33 @@ export default function MisReservasPage({ params }: { params: { locale: string }
                     <p className="text-xs font-semibold uppercase text-[color:var(--text-muted)]">
                       Historial de notificaciones
                     </p>
-                    <div className="space-y-2">
-                      {notifications.map(notification => (
-                        <div
-                          key={`${notification.type}-${notification.at}`}
-                          className="flex items-start justify-between rounded-lg border border-[color:var(--line)] p-3"
-                        >
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Badge color="neutral">{notification.title}</Badge>
-                              <span className="text-xs text-[color:var(--text-muted)]">
-                                {formatDateTime(notification.at, locale)}
-                              </span>
+                    {notifications.length === 0 ? (
+                      <p className="text-xs text-[color:var(--text-muted)]">
+                        Aún no se registran eventos para esta reserva.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {notifications.map(notification => (
+                          <div
+                            key={`${notification.type}-${notification.timestamp}`}
+                            className="flex items-start justify-between rounded-lg border border-[color:var(--line)] p-3"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <Badge color="neutral">{notification.title}</Badge>
+                                <span className="text-xs text-[color:var(--text-muted)]">
+                                  {formatDateTime(notification.timestamp, locale)}
+                                </span>
+                              </div>
+                              <p className="text-sm text-[color:var(--text-strong)]">{notification.description}</p>
                             </div>
-                            <p className="text-sm text-[color:var(--text-strong)]">{notification.description}</p>
+                            <span className="text-xs font-medium uppercase text-[color:var(--brand-primary)]">
+                              {notification.type}
+                            </span>
                           </div>
-                          <span className="text-xs font-medium uppercase text-[color:var(--brand-primary)]">
-                            {notification.type}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
