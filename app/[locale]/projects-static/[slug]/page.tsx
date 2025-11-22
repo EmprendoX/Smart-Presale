@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Progress } from "@/components/ui/Progress";
-import { Button } from "@/components/ui/Button";
 import { fmtCurrency } from "@/lib/format";
 import { projectsData } from "@/data/projects";
+import { ReservationCheckout } from "@/frontend/src/components/ReservationCheckout";
 
 export default function ProjectStaticDetail({ params }: { params: { slug: string; locale: string } }) {
   const project = projectsData.find(item => item.slug === params.slug);
@@ -83,7 +83,7 @@ export default function ProjectStaticDetail({ params }: { params: { slug: string
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)]">
-                  <span>Progreso</span>
+                  <span>Progreso publicado</span>
                   <span>{percent}%</span>
                 </div>
                 <Progress value={percent} />
@@ -119,12 +119,19 @@ export default function ProjectStaticDetail({ params }: { params: { slug: string
                 </p>
                 <p className="text-xs opacity-90">Actualizado en tiempo real.</p>
               </div>
-
-              <Button type="button" className="w-full" size="lg">
-                Reservar cupo
-              </Button>
             </CardContent>
           </Card>
+
+          <ReservationCheckout
+            roundId={project.id}
+            depositAmount={project.deposit}
+            goal={project.goal}
+            raised={project.raised}
+            currency={project.currency}
+            deadline={project.deadline}
+            locale={params.locale}
+            defaultSlots={1}
+          />
         </aside>
       </div>
     </div>
