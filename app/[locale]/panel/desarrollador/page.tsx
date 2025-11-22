@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Progress } from "@/components/ui/Progress";
+import { Link } from "@/i18n/routing";
 import { BarChart } from "@/components/charts/BarChart";
 
 const buyerOriginsSeed = [
@@ -120,6 +121,9 @@ export default function DeveloperPanelPage({ params }: { params: { locale: strin
               ))}
             </Select>
           </div>
+          <Button asChild variant="secondary" className="self-start sm:self-end">
+            <Link href="/panel/desarrollador/onboarding">Onboarding de documentos</Link>
+          </Button>
           <Button onClick={handleExportCsv} className="self-start sm:self-end">
             Exportar CSV simulado
           </Button>
