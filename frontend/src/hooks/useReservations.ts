@@ -8,10 +8,20 @@ export type RoundStatus = "en_progreso" | "parcial" | "cumplida" | "no_cumplida"
 
 export type LocalReservationStatus = "pendiente" | "confirmada" | "reembolsada" | "asignada";
 
+export type LocalPaymentMethod = "tarjeta" | "transferencia";
+export type LocalPaymentStatus = "pendiente" | "confirmada";
+
+export type LocalReservationPayment = {
+  method: LocalPaymentMethod;
+  txId: string;
+  status: LocalPaymentStatus;
+};
+
 export type LocalReservation = {
   slots: number;
   status: LocalReservationStatus;
   timestamp: number;
+  payment?: LocalReservationPayment;
 };
 
 const STORAGE_KEY = "sps_reservations";
@@ -40,7 +50,8 @@ const persistStorage = (roundId: string, reservation: LocalReservation) => {
 const defaultReservation: LocalReservation = {
   slots: 0,
   status: "pendiente",
-  timestamp: 0
+  timestamp: 0,
+  payment: undefined
 };
 
 type RoundContext = {
@@ -59,9 +70,10 @@ export function useReservations(roundId: string, round: RoundContext, initial?: 
     () => ({
       slots: initial?.slots ?? defaultReservation.slots,
       status: initial?.status ?? defaultReservation.status,
-      timestamp: initial?.timestamp ?? Date.now()
+      timestamp: initial?.timestamp ?? Date.now(),
+      payment: initial?.payment ?? defaultReservation.payment
     }),
-    [initial?.slots, initial?.status, initial?.timestamp]
+    [initial?.payment, initial?.slots, initial?.status, initial?.timestamp]
   );
 
   const [reservation, setReservation] = useState<LocalReservation>(baseReservation);
@@ -107,6 +119,13 @@ export function useReservations(roundId: string, round: RoundContext, initial?: 
     [persist]
   );
 
+  const setPayment = useCallback(
+    (payment?: LocalReservationPayment) => {
+      persist(prev => ({ ...prev, payment, timestamp: Date.now() }));
+    },
+    [persist]
+  );
+
   const reset = useCallback(() => {
     persist(() => ({ ...defaultReservation, timestamp: Date.now() }));
   }, [persist]);
@@ -147,6 +166,7 @@ export function useReservations(roundId: string, round: RoundContext, initial?: 
     reservation,
     setSlots,
     setStatus,
+    setPayment,
     reset,
     roundStatus,
     progressPercent,
