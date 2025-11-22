@@ -117,7 +117,23 @@
       "title": "Elige cómo quieres comprar",
       "subtitle": "Entrega inmediata o Smart Presale.",
       "ctaImmediate": "Ver entrega inmediata",
-      "ctaPresale": "Entrar a Smart Presale"
+      "ctaPresale": "Entrar a Smart Presale",
+      "badges": {
+        "brand": "Smart Pre-Sale™",
+        "verified": "Desarrollador verificado",
+        "refundable": "Depósito reembolsable"
+      },
+      "metrics": {
+        "reservations": "Reservas totales",
+        "last24h": "{count} en las últimas 24h",
+        "refundable": "Depósito reembolsable",
+        "refundableValue": "USD $1,000",
+        "refundableHelper": "Se devuelve en 24h si cancelas",
+        "visitors": "Visitantes en línea",
+        "visitorsHelper": "Cifra mock en tiempo real"
+      },
+      "progressTitle": "Transparencia de progreso",
+      "progressHelper": "Actualizamos el avance de fondeo y obra cada semana."
     },
     "shortcuts": {
       "title": "Atajos principales",
@@ -155,6 +171,40 @@
     "listing": {
       "price": "Precio: {price}",
       "viewDetail": "Ver detalle →"
+    },
+    "howItWorks": {
+      "title": "Cómo funciona",
+      "subtitle": "Pasos claros, depósitos seguros y visibilidad constante del progreso de tu campaña.",
+      "steps": {
+        "reserve": {
+          "title": "Reserva con un depósito simple",
+          "description": "Bloquea tu lugar con USD $1,000 reembolsables mientras revisas la documentación."
+        },
+        "verify": {
+          "title": "Verifica al desarrollador",
+          "description": "Revisa contratos, KYC y el perfil del equipo con respaldo de Smart Pre-Sale™."
+        },
+        "refund": {
+          "title": "Pide reembolso cuando quieras",
+          "description": "Si no avanzas, solicita la devolución y la procesamos en máximo 24 horas hábiles."
+        },
+        "close": {
+          "title": "Formaliza tu compra",
+          "description": "Firma digital, actualizaciones de obra y cronograma de cierres visibles para todos."
+        }
+      },
+      "rules": {
+        "title": "Reglas de depósito y reembolso",
+        "deposit": "Depósito estándar de USD $1,000 por reserva, custodiado y trazable.",
+        "refund": "Reembolsos sin penalización si cancelas antes de firmar, procesados en 24h.",
+        "visibility": "Recibos y estatus de reembolso visibles en tu panel y para el administrador."
+      },
+      "progress": {
+        "title": "Transparencia de progreso",
+        "description": "Seguimiento semanal de fondeo, hitos de obra y entregas esperado versus real.",
+        "label": "Avance de reservas",
+        "helper": "Porcentaje mostrado en tableros públicos y en la landing."
+      }
     }
   },
   "projects": {

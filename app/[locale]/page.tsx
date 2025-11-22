@@ -3,6 +3,8 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
+import { Progress } from "@/components/ui/Progress";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import { listPublishedProjects } from "@/lib/mockdb";
@@ -96,6 +98,42 @@ export default async function HomePage({ params }: { params: Params }) {
   const { locale } = params;
   const t = await getTranslations({ locale, namespace: "home" });
   const projects = await listPublishedProjects();
+  const stats = [
+    {
+      label: t("hero.metrics.reservations"),
+      value: "428",
+      helper: t("hero.metrics.last24h", { count: "32" })
+    },
+    {
+      label: t("hero.metrics.refundable"),
+      value: t("hero.metrics.refundableValue"),
+      helper: t("hero.metrics.refundableHelper")
+    },
+    {
+      label: t("hero.metrics.visitors"),
+      value: "184",
+      helper: t("hero.metrics.visitorsHelper")
+    }
+  ];
+
+  const steps = [
+    {
+      title: t("howItWorks.steps.reserve.title"),
+      description: t("howItWorks.steps.reserve.description")
+    },
+    {
+      title: t("howItWorks.steps.verify.title"),
+      description: t("howItWorks.steps.verify.description")
+    },
+    {
+      title: t("howItWorks.steps.refund.title"),
+      description: t("howItWorks.steps.refund.description")
+    },
+    {
+      title: t("howItWorks.steps.close.title"),
+      description: t("howItWorks.steps.close.description")
+    }
+  ];
 
   const immediateListings = projects.filter(project => project.listingType === "sale");
   const presaleListings = projects.filter(project => project.listingType === "presale");
@@ -103,24 +141,92 @@ export default async function HomePage({ params }: { params: Params }) {
   return (
     <div className="space-y-12">
       <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[color:var(--bg-surface)] via-[color:var(--bg-soft)] to-[color:var(--bg-soft)] px-4 md:px-6 lg:px-10 py-12 shadow-lg border border-[color:var(--line)]">
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <h1 className="text-3xl font-semibold md:text-4xl text-[color:var(--brand-primary-hover)]">{t("hero.title")}</h1>
-            <p className="text-lg text-[color:var(--brand-primary)]">{t("hero.subtitle")}</p>
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge color="info">{t("hero.badges.brand")}</Badge>
+              <Badge color="success">{t("hero.badges.verified")}</Badge>
+              <Badge color="warning">{t("hero.badges.refundable")}</Badge>
+            </div>
+            <div className="space-y-3">
+              <h1 className="text-3xl font-semibold md:text-4xl text-[color:var(--brand-primary-hover)]">{t("hero.title")}</h1>
+              <p className="text-lg text-[color:var(--brand-primary)]">{t("hero.subtitle")}</p>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/projects#sale"
+                className="inline-flex items-center rounded-lg bg-[color:var(--brand-primary)] px-6 py-3 text-sm font-semibold text-[color:var(--text-inverse)] shadow-md hover:bg-[color:var(--brand-primary-hover)] hover:shadow-lg transition-all duration-200"
+              >
+                {t("hero.ctaImmediate")}
+              </Link>
+              <Link
+                href="/projects#presale"
+                className="inline-flex items-center rounded-lg border-2 border-[color:var(--brand-primary)] bg-[color:var(--bg-surface)] px-6 py-3 text-sm font-semibold text-[color:var(--brand-primary)] hover:bg-[color:var(--bg-soft)] hover:shadow-md transition-all duration-200"
+              >
+                {t("hero.ctaPresale")}
+              </Link>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-4">
-            <Link
-              href="/projects#sale"
-              className="inline-flex items-center rounded-lg bg-[color:var(--brand-primary)] px-6 py-3 text-sm font-semibold text-[color:var(--text-inverse)] shadow-md hover:bg-[color:var(--brand-primary-hover)] hover:shadow-lg transition-all duration-200"
-            >
-              {t("hero.ctaImmediate")}
-            </Link>
-            <Link
-              href="/projects#presale"
-              className="inline-flex items-center rounded-lg border-2 border-[color:var(--brand-primary)] bg-[color:var(--bg-surface)] px-6 py-3 text-sm font-semibold text-[color:var(--brand-primary)] hover:bg-[color:var(--bg-soft)] hover:shadow-md transition-all duration-200"
-            >
-              {t("hero.ctaPresale")}
-            </Link>
+          <div className="space-y-4 rounded-2xl border border-[color:var(--line)] bg-[color:var(--bg-surface)] p-6 shadow-sm">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm text-[color:var(--text-muted)]">
+                <span>{t("hero.progressTitle")}</span>
+                <span className="font-semibold text-[color:var(--brand-primary-hover)]">72%</span>
+              </div>
+              <Progress value={72} />
+              <p className="text-xs text-[color:var(--text-muted)]">{t("hero.progressHelper")}</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {stats.map(stat => (
+                <div key={stat.label} className="rounded-xl border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-4 shadow-xs">
+                  <p className="text-sm text-[color:var(--text-muted)]">{stat.label}</p>
+                  <p className="text-xl font-semibold text-[color:var(--text-strong)]">{stat.value}</p>
+                  <p className="text-xs text-[color:var(--text-muted)]">{stat.helper}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-6 rounded-3xl border border-[color:var(--line)] bg-[color:var(--bg-surface)] p-6 shadow-sm">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("howItWorks.title")}</h2>
+          <p className="text-sm text-[color:var(--text-muted)]">{t("howItWorks.subtitle")}</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {steps.map((step, index) => (
+            <div key={step.title} className="flex gap-4 rounded-2xl border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-4 shadow-xs">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--brand-primary)] text-base font-semibold text-[color:var(--text-inverse)]">
+                {index + 1}
+              </div>
+              <div className="space-y-1">
+                <p className="text-base font-semibold text-[color:var(--text-strong)]">{step.title}</p>
+                <p className="text-sm text-[color:var(--text-muted)]">{step.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-5 shadow-xs">
+            <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{t("howItWorks.rules.title")}</h3>
+            <ul className="mt-3 space-y-2 text-sm text-[color:var(--text-muted)]">
+              <li>• {t("howItWorks.rules.deposit")}</li>
+              <li>• {t("howItWorks.rules.refund")}</li>
+              <li>• {t("howItWorks.rules.visibility")}</li>
+            </ul>
+          </div>
+          <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-5 shadow-xs">
+            <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{t("howItWorks.progress.title")}</h3>
+            <p className="mt-2 text-sm text-[color:var(--text-muted)]">{t("howItWorks.progress.description")}</p>
+            <div className="mt-4 space-y-2 rounded-xl border border-[color:var(--line)] bg-[color:var(--bg-surface)] p-4">
+              <div className="flex items-center justify-between text-sm text-[color:var(--text-muted)]">
+                <span>{t("howItWorks.progress.label")}</span>
+                <span className="font-semibold text-[color:var(--brand-primary-hover)]">72%</span>
+              </div>
+              <Progress value={72} />
+              <p className="text-xs text-[color:var(--text-muted)]">{t("howItWorks.progress.helper")}</p>
+            </div>
           </div>
         </div>
       </section>
