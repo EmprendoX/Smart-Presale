@@ -7,6 +7,7 @@ export type ProjectShowcase = {
   city: string;
   country: string;
   developer: string;
+  developerId: string;
   verifiedDeveloper: boolean;
   goal: number;
   raised: number;
@@ -30,6 +31,7 @@ export const projectsData: ProjectShowcase[] = [
     city: "Cancún",
     country: "México",
     developer: "Blue Horizon",
+    developerId: "dev-01",
     verifiedDeveloper: true,
     goal: 3500000,
     raised: 1800000,
@@ -59,6 +61,7 @@ export const projectsData: ProjectShowcase[] = [
     city: "CDMX",
     country: "México",
     developer: "Urban Loop",
+    developerId: "dev-02",
     verifiedDeveloper: true,
     goal: 2200000,
     raised: 940000,
@@ -86,6 +89,7 @@ export const projectsData: ProjectShowcase[] = [
     city: "Mérida",
     country: "México",
     developer: "Norte Vivo",
+    developerId: "dev-03",
     verifiedDeveloper: true,
     goal: 1500000,
     raised: 1200000,
