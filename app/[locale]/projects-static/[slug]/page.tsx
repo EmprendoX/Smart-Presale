@@ -131,6 +131,7 @@ export default function ProjectStaticDetail({ params }: { params: { slug: string
             deadline={project.deadline}
             locale={params.locale}
             defaultSlots={1}
+            rule={project.rule}
           />
         </aside>
       </div>
