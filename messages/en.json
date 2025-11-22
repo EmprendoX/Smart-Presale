@@ -117,7 +117,23 @@
       "title": "Choose how you want to buy",
       "subtitle": "Immediate delivery or Smart Presale.",
       "ctaImmediate": "View immediate delivery",
-      "ctaPresale": "Enter Smart Presale"
+      "ctaPresale": "Enter Smart Presale",
+      "badges": {
+        "brand": "Smart Pre-Sale™",
+        "verified": "Verified developer",
+        "refundable": "Refundable deposit"
+      },
+      "metrics": {
+        "reservations": "Total reservations",
+        "last24h": "{count} in the last 24h",
+        "refundable": "Refundable deposit",
+        "refundableValue": "USD $1,000",
+        "refundableHelper": "Returned within 24h if you cancel",
+        "visitors": "Live visitors",
+        "visitorsHelper": "Mock real-time counter"
+      },
+      "progressTitle": "Progress transparency",
+      "progressHelper": "We publish funding and construction updates every week."
     },
     "shortcuts": {
       "title": "Main shortcuts",
@@ -155,6 +171,40 @@
     "listing": {
       "price": "Price: {price}",
       "viewDetail": "View detail →"
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "Clear steps, refundable deposits and transparent progress for every campaign.",
+      "steps": {
+        "reserve": {
+          "title": "Reserve with a simple deposit",
+          "description": "Hold your spot with a refundable USD $1,000 while you review documents."
+        },
+        "verify": {
+          "title": "Verify the developer",
+          "description": "Review contracts, KYC and team credentials backed by Smart Pre-Sale™."
+        },
+        "refund": {
+          "title": "Request a refund anytime",
+          "description": "If you don’t move forward, ask for a refund and we process it within 24 business hours."
+        },
+        "close": {
+          "title": "Close your purchase",
+          "description": "Digital signing, construction updates and closing timeline visible to everyone."
+        }
+      },
+      "rules": {
+        "title": "Deposit and refund rules",
+        "deposit": "Standard USD $1,000 per reservation, held securely with traceability.",
+        "refund": "Penalty-free refunds before signing, processed within 24h.",
+        "visibility": "Receipts and refund status visible in your dashboard and for the admin."
+      },
+      "progress": {
+        "title": "Progress transparency",
+        "description": "Weekly tracking of funding, construction milestones and promised vs actual delivery.",
+        "label": "Reservation progress",
+        "helper": "Percentage displayed on public dashboards and this landing."
+      }
     }
   },
   "projects": {
