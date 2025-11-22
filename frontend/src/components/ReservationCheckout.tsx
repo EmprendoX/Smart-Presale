@@ -4,10 +4,18 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
 import { Progress } from "@/components/ui/Progress";
 import { fmtCurrency } from "@/lib/format";
 import { Currency } from "@/lib/types";
-import { LocalReservationStatus, RoundStatus, useReservations } from "@/frontend/src/hooks/useReservations";
+import {
+  LocalPaymentMethod,
+  LocalReservationPayment,
+  LocalReservationStatus,
+  LocalPaymentStatus,
+  RoundStatus,
+  useReservations
+} from "@/frontend/src/hooks/useReservations";
 
 const formatCountdown = (msRemaining: number) => {
   const totalSeconds = Math.max(0, Math.floor(msRemaining / 1000));
@@ -55,7 +63,7 @@ export function ReservationCheckout({
   currentSlots,
   rule = "todo-nada"
 }: ReservationCheckoutProps) {
-  const { reservation, setSlots, setStatus, roundStatus, progressPercent, progressValue } = useReservations(
+  const { reservation, setSlots, setStatus, setPayment, roundStatus, progressPercent, progressValue } = useReservations(
     roundId,
     {
       goalType,
@@ -69,6 +77,22 @@ export function ReservationCheckout({
     { slots: defaultSlots }
   );
   const [now, setNow] = useState(Date.now());
+  const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<LocalPaymentMethod>("tarjeta");
+  const [draftTxIds, setDraftTxIds] = useState<Record<LocalPaymentMethod, string>>({
+    tarjeta: "",
+    transferencia: ""
+  });
+
+  const paymentStatusLabels: Record<LocalPaymentStatus, string> = {
+    pendiente: "Pendiente de conciliación",
+    confirmada: "Confirmada"
+  };
+
+  const paymentMethodLabels: Record<LocalPaymentMethod, string> = {
+    tarjeta: "Tarjeta",
+    transferencia: "Transferencia"
+  };
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000);
@@ -82,6 +106,44 @@ export function ReservationCheckout({
 
   const confirmReservation = () => {
     if (reservation.slots <= 0) return;
+    setPaymentModalOpen(true);
+  };
+
+  const generateMockId = (prefix: string) => `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+
+  useEffect(() => {
+    if (isPaymentModalOpen) {
+      setDraftTxIds({ tarjeta: generateMockId("pi_mock"), transferencia: generateMockId("trf") });
+      setSelectedPaymentMethod(reservation.payment?.method ?? "tarjeta");
+    }
+  }, [isPaymentModalOpen, reservation.payment?.method]);
+
+  const persistPayment = (payment: LocalReservationPayment) => {
+    setPayment(payment);
+    if (payment.status === "confirmada") {
+      setStatus("confirmada");
+    } else {
+      setStatus("pendiente");
+    }
+  };
+
+  const handleSimulatePayment = () => {
+    const txId = draftTxIds[selectedPaymentMethod];
+    if (!txId) return;
+
+    if (selectedPaymentMethod === "tarjeta") {
+      persistPayment({ method: "tarjeta", txId, status: "confirmada" });
+    } else {
+      persistPayment({ method: "transferencia", txId, status: "pendiente" });
+    }
+
+    setPaymentModalOpen(false);
+  };
+
+  const handleConfirmPayment = () => {
+    if (!reservation.payment) return;
+
+    setPayment({ ...reservation.payment, status: "confirmada" });
     setStatus("confirmada");
   };
 
@@ -148,6 +210,29 @@ export function ReservationCheckout({
           </div>
         </div>
 
+        <div className="rounded-lg border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase text-[color:var(--text-muted)]">Método de pago</p>
+              <p className="text-sm font-semibold text-[color:var(--text-strong)]">
+                {reservation.payment ? paymentMethodLabels[reservation.payment.method] : "Sin asignar"}
+              </p>
+              <p className="text-xs text-[color:var(--text-muted)]">
+                {reservation.payment?.txId ? `Referencia: ${reservation.payment.txId}` : "Selecciona un método para generar tu referencia"}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-semibold uppercase text-[color:var(--text-muted)]">Estado del pago</p>
+              <p className="text-sm font-semibold text-[color:var(--text-strong)]">
+                {reservation.payment?.status ? paymentStatusLabels[reservation.payment.status] : "Pendiente"}
+              </p>
+              {reservation.payment?.status === "pendiente" && (
+                <p className="text-xs text-[color:var(--text-muted)]">Confirma manualmente cuando recibas la transferencia.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)]">
             <span>Progreso de la ronda</span>
@@ -192,9 +277,14 @@ export function ReservationCheckout({
             onChange={event => handleSlotChange(parseInt(event.target.value || "1", 10))}
           />
           <div className="flex flex-col gap-2 sm:items-end">
-            <Button onClick={confirmReservation} disabled={reservation.slots <= 0 || reservation.status === "confirmada"}>
-              {reservation.status === "confirmada" ? "Reserva confirmada" : "Confirmar reserva"}
+            <Button onClick={confirmReservation} disabled={reservation.slots <= 0}>
+              {reservation.payment?.status === "confirmada" ? "Reserva confirmada" : "Proceder al pago"}
             </Button>
+            {reservation.payment?.status === "pendiente" && (
+              <Button variant="secondary" onClick={handleConfirmPayment} className="w-full sm:w-auto">
+                Confirmar pago
+              </Button>
+            )}
             {roundStatus === "cumplida" && (
               <Button variant="secondary" className="w-full sm:w-auto">
                 Contrato de promesa (próximamente)
@@ -205,9 +295,64 @@ export function ReservationCheckout({
 
         <p className="text-xs text-[color:var(--text-muted)]">
           La reserva se almacena localmente por ronda. Puedes seguir editando los cupos y, una vez listo, confirmar la operación
-          sin necesidad de pago en línea.
+          con tarjeta o transferencia simulada y conciliar el pago manualmente.
         </p>
       </CardContent>
     </Card>
+
+    <Modal open={isPaymentModalOpen} title="Simular pago" onClose={() => setPaymentModalOpen(false)}>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-[color:var(--text-strong)]">1. Selecciona el método</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(["tarjeta", "transferencia"] as LocalPaymentMethod[]).map(method => (
+              <button
+                key={method}
+                className={`rounded border px-3 py-2 text-left ${
+                  selectedPaymentMethod === method
+                    ? "border-[color:var(--text-strong)] bg-[color:var(--bg-soft)]"
+                    : "border-[color:var(--line)]"
+                }`}
+                onClick={() => setSelectedPaymentMethod(method)}
+              >
+                <p className="text-sm font-semibold text-[color:var(--text-strong)]">{paymentMethodLabels[method]}</p>
+                <p className="text-xs text-[color:var(--text-muted)]">
+                  {method === "tarjeta"
+                    ? "Genera un Payment Intent simulado"
+                    : "Obtén una referencia única para tu transferencia"}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-[color:var(--text-strong)]">2. Detalles</p>
+          {selectedPaymentMethod === "tarjeta" && (
+            <div className="rounded border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-3 text-sm">
+              <p className="font-semibold">Payment Intent generado</p>
+              <p className="text-xs text-[color:var(--text-muted)]">ID: {draftTxIds.tarjeta}</p>
+              <p className="text-xs text-[color:var(--text-muted)]">El pago se confirmará automáticamente.</p>
+            </div>
+          )}
+          {selectedPaymentMethod === "transferencia" && (
+            <div className="rounded border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-3 text-sm">
+              <p className="font-semibold">Referencia única</p>
+              <p className="text-xs text-[color:var(--text-muted)]">Usa este ID al transferir: {draftTxIds.transferencia}</p>
+              <p className="text-xs text-[color:var(--text-muted)]">
+                El pago quedará pendiente hasta que confirmes manualmente la conciliación.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={() => setPaymentModalOpen(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSimulatePayment}>Confirmar método</Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
