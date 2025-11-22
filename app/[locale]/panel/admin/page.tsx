@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Progress } from "@/components/ui/Progress";
+import { LogLevel, useLogger } from "@/frontend/src/utils/logger";
 
 const reviewProjects = [
   {
@@ -69,18 +70,16 @@ const reimbursementInbox = [
   }
 ];
 
-const LOG_STORAGE_KEY = "admin-panel-log";
-
 type DecisionStatus = "pendiente" | "aprobado" | "rechazado";
 
-type LogEntry = {
-  id: string;
-  action: "aprobado" | "rechazado" | "resuelto";
-  message: string;
-  timestamp: number;
+const levelColor: Record<LogLevel, "success" | "warning" | "error" | "neutral"> = {
+  info: "neutral",
+  warn: "warning",
+  error: "error"
 };
 
 export default function AdminPanelPage() {
+  const { logs, logInfo, logWarn, logError } = useLogger();
   const [statuses, setStatuses] = useState<Record<string, DecisionStatus>>(() => {
     const initial: Record<string, DecisionStatus> = {};
     reviewProjects.forEach(project => {
@@ -97,18 +96,11 @@ export default function AdminPanelPage() {
     return initial;
   });
 
-  const [log, setLog] = useState<LogEntry[]>([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(LOG_STORAGE_KEY);
-    if (stored) {
-      try {
-        setLog(JSON.parse(stored));
-      } catch (err) {
-        console.error("No se pudo leer la bitácora local", err);
-      }
-    }
-  }, []);
+  const appendLog = (level: LogLevel, message: string, metadata?: Record<string, unknown>) => {
+    if (level === "info") return logInfo(message, { context: "admin", metadata });
+    if (level === "warn") return logWarn(message, { context: "admin", metadata });
+    return logError(message, { context: "admin", metadata });
+  };
 
   const legalHealth = useMemo(() => {
     return reviewProjects.reduce((acc, project) => {
@@ -119,34 +111,16 @@ export default function AdminPanelPage() {
     }, {} as Record<string, number>);
   }, []);
 
-  const appendLog = (entry: LogEntry) => {
-    setLog(prev => {
-      const next = [entry, ...prev];
-      localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
-  };
-
   const handleDecision = (projectId: string, next: Exclude<DecisionStatus, "pendiente">) => {
     setStatuses(prev => ({ ...prev, [projectId]: next }));
     const project = reviewProjects.find(item => item.id === projectId);
-    appendLog({
-      id: crypto.randomUUID(),
-      action: next,
-      message: `${project?.name ?? projectId} marcado como ${next}`,
-      timestamp: Date.now()
-    });
+    appendLog("info", `${project?.name ?? projectId} marcado como ${next}`, { projectId });
   };
 
   const handleResolveRefund = (refundId: string) => {
     setRefundStatuses(prev => ({ ...prev, [refundId]: "resuelto" }));
     const item = reimbursementInbox.find(entry => entry.id === refundId);
-    appendLog({
-      id: crypto.randomUUID(),
-      action: "resuelto",
-      message: `Reserva de ${item?.buyer ?? refundId} marcada como resuelta`,
-      timestamp: Date.now()
-    });
+    appendLog("info", `Reserva de ${item?.buyer ?? refundId} marcada como resuelta`, { refundId });
   };
 
   return (
@@ -293,23 +267,22 @@ export default function AdminPanelPage() {
           <p className="text-xs font-semibold uppercase text-[color:var(--text-muted)]">Bitácora</p>
           <h2 className="text-lg font-semibold text-[color:var(--text-strong)]">Cambios locales</h2>
           <p className="text-sm text-[color:var(--text-muted)]">
-            Se almacenan en localStorage para pruebas. Incluye aprobaciones, rechazos y disputas resueltas.
+            Se almacenan en localStorage para pruebas. Incluye aprobaciones, rechazos, disputas resueltas y alertas del flujo.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
-          {log.length === 0 ? (
+          {logs.length === 0 ? (
             <p className="text-sm text-[color:var(--text-muted)]">Aún no hay movimientos registrados en esta sesión.</p>
           ) : (
-            log.map(entry => (
+            logs.map(entry => (
               <div
                 key={entry.id}
                 className="flex items-start justify-between gap-3 rounded border border-[color:var(--line)] bg-[color:var(--bg-soft)] p-3"
               >
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Badge color={entry.action === "aprobado" ? "success" : entry.action === "rechazado" ? "error" : "neutral"}>
-                      {entry.action}
-                    </Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge color={levelColor[entry.level]}>{entry.level}</Badge>
+                    {entry.context && <Badge variant="outline">{entry.context}</Badge>}
                     <span className="text-xs text-[color:var(--text-muted)]">
                       {new Date(entry.timestamp).toLocaleString("es-MX", {
                         month: "short",
@@ -320,6 +293,13 @@ export default function AdminPanelPage() {
                     </span>
                   </div>
                   <p className="text-sm text-[color:var(--text-strong)]">{entry.message}</p>
+                  {entry.metadata && Object.keys(entry.metadata).length > 0 && (
+                    <p className="text-xs text-[color:var(--text-muted)]">
+                      {Object.entries(entry.metadata)
+                        .map(([key, value]) => `${key}: ${String(value)}`)
+                        .join(" · ")}
+                    </p>
+                  )}
                 </div>
               </div>
             ))

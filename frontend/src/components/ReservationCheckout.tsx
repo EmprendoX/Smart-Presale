@@ -10,6 +10,7 @@ import { fmtCurrency } from "@/lib/format";
 import { Currency } from "@/lib/types";
 import { Toast } from "@/components/ui/Toast";
 import { EventRecord, useEventLog } from "@/frontend/src/utils/event-log";
+import { logError, logWarn } from "@/frontend/src/utils/logger";
 import {
   LocalPaymentMethod,
   LocalReservationPayment,
@@ -87,6 +88,7 @@ export function ReservationCheckout({
   });
   const { addEvent } = useEventLog({ audience: "buyer", roundId });
   const [toasts, setToasts] = useState<EventRecord[]>([]);
+  const [hasLoggedExpiration, setHasLoggedExpiration] = useState(false);
 
   const paymentStatusLabels: Record<LocalPaymentStatus, string> = {
     pendiente: "Pendiente de conciliación",
@@ -142,6 +144,16 @@ export function ReservationCheckout({
   }, [addEvent, reservation.status, roundId]);
 
   useEffect(() => {
+    if (roundStatus === "no_cumplida" && !hasLoggedExpiration) {
+      logWarn("Ronda marcada como expirada para revisión manual", {
+        context: "checkout",
+        metadata: { roundId }
+      });
+      setHasLoggedExpiration(true);
+    }
+  }, [hasLoggedExpiration, logWarn, roundId, roundStatus]);
+
+  useEffect(() => {
     if (toasts.length === 0) return;
 
     const timers = toasts.map(toast => window.setTimeout(() => dismissToast(toast.id), 5200));
@@ -178,7 +190,13 @@ export function ReservationCheckout({
 
   const handleSimulatePayment = () => {
     const txId = draftTxIds[selectedPaymentMethod];
-    if (!txId) return;
+    if (!txId) {
+      logError("Intento de pago simulado sin referencia generada", {
+        context: "checkout",
+        metadata: { roundId, method: selectedPaymentMethod }
+      });
+      return;
+    }
 
     if (selectedPaymentMethod === "tarjeta") {
       persistPayment({ method: "tarjeta", txId, status: "confirmada" });
@@ -190,7 +208,13 @@ export function ReservationCheckout({
   };
 
   const handleConfirmPayment = () => {
-    if (!reservation.payment) return;
+    if (!reservation.payment) {
+      logError("Intento de confirmación manual sin pago asociado", {
+        context: "checkout",
+        metadata: { roundId }
+      });
+      return;
+    }
 
     setPayment({ ...reservation.payment, status: "confirmada" });
     setStatus("confirmada");
