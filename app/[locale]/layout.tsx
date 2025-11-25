@@ -8,6 +8,7 @@ import { Navbar } from '@/components/Navbar';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { TenantProvider } from '@/providers/TenantProvider';
+import { AuthProvider } from '@/providers/AuthProvider';
 import type { Tenant, TenantSettings } from '@/lib/types';
 import { buildCssVariables, resolveTenantTheme } from '@/lib/tenant/theme';
 import '../globals.css';
@@ -93,10 +94,12 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>
             <TenantProvider value={tenantContext}>
-              <ToastProvider>
-                <Navbar />
-                <main className="container py-8 overflow-x-hidden min-w-0">{children}</main>
-              </ToastProvider>
+              <AuthProvider>
+                <ToastProvider>
+                  <Navbar />
+                  <main className="container py-8 overflow-x-hidden min-w-0">{children}</main>
+                </ToastProvider>
+              </AuthProvider>
             </TenantProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

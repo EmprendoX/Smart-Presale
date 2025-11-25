@@ -481,3 +481,57 @@ on conflict (tenant_id) do update set
   font_family = excluded.font_family,
   metadata = excluded.metadata,
   updated_at = now();
+
+-- Trigger para sincronizar auth.users con app_users ------------------------
+create or replace function public.handle_new_user()
+returns trigger as $$
+declare
+  default_tenant_id text := 'tenant_default';
+  user_full_name text;
+  user_phone text;
+begin
+  -- Extraer metadata del usuario
+  user_full_name := coalesce(
+    new.raw_user_meta_data->>'full_name',
+    new.raw_user_meta_data->>'name',
+    split_part(new.email, '@', 1)
+  );
+  user_phone := new.raw_user_meta_data->>'phone';
+
+  -- Crear registro en app_users si no existe
+  insert into public.app_users (
+    id,
+    tenant_id,
+    name,
+    role,
+    kyc_status,
+    email,
+    metadata
+  )
+  values (
+    new.id::text,
+    default_tenant_id,
+    user_full_name,
+    'buyer',
+    'none',
+    new.email,
+    jsonb_build_object(
+      'fullName', user_full_name,
+      'phone', user_phone,
+      'createdAt', now()
+    )
+  )
+  on conflict (id) do update set
+    name = excluded.name,
+    email = excluded.email,
+    metadata = excluded.metadata;
+
+  return new;
+end;
+$$ language plpgsql security definer;
+
+-- Crear trigger si no existe
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();

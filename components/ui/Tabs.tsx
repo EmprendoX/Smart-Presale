@@ -17,6 +17,7 @@ export function Tabs({ tabs }: { tabs: Tab[] }) {
         {tabs.map(t => (
           <button
             key={t.key}
+            type="button"
             onClick={() => setActive(t.key)}
             className={`px-3 py-2 text-sm whitespace-nowrap flex-shrink-0 ${
               active === t.key 
@@ -28,7 +29,17 @@ export function Tabs({ tabs }: { tabs: Tab[] }) {
           </button>
         ))}
       </div>
-      <div className="min-w-0">{tabs.find(t => t.key === active)?.content}</div>
+      <div className="min-w-0">
+        {tabs.map(t => (
+          <div
+            key={t.key}
+            style={{ display: active === t.key ? 'block' : 'none' }}
+            className="min-w-0"
+          >
+            {t.content}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

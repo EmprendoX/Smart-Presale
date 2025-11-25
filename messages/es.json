@@ -54,6 +54,21 @@
     }
   },
   "auth": {
+    "login": {
+      "title": "Iniciar sesión / Registrarse",
+      "subtitle": "Ingresa tu información para recibir un código de acceso por email",
+      "fullName": "Nombre completo",
+      "fullNamePlaceholder": "Ej: Juan Pérez",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "tu@email.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+52 55 1234 5678",
+      "sendCode": "Enviar código de acceso",
+      "sending": "Enviando...",
+      "successMessage": "¡Código de acceso enviado!",
+      "checkEmail": "Revisa tu correo electrónico para continuar con el acceso.",
+      "sendAnother": "Enviar otro código"
+    },
     "signUp": {
       "title": "Crea tu cuenta Smart Presale",
       "subtitle": "Recibe un enlace seguro o usa tu red social favorita.",
@@ -244,6 +259,21 @@
     }
   },
   "project": {
+    "gallery": "Galería",
+    "video": "Video promocional",
+    "description": "Descripción",
+    "additionalInfo": "Información adicional",
+    "attributes": "Amenidades",
+    "progress": {
+      "label": "Progreso de la preventa",
+      "confirmed": "{confirmed} de {total} reservas confirmadas",
+      "deadline": "Fecha límite",
+      "depositPerSlot": "Depósito por slot"
+    },
+    "reserve": {
+      "description": "Reserva tu lugar en esta preventa",
+      "button": "Reservar ahora"
+    },
     "labels": {
       "presale": "Preventa",
       "sale": "Venta directa"
@@ -450,6 +480,7 @@
   },
   "dashboard": {
     "title": "Mis reservas",
+    "subtitle": "Gestiona y revisa todas tus reservas de preventa",
     "filters": {
       "all": "Todas",
       "pending": "Pendientes",
@@ -473,7 +504,26 @@
     "requestRefund": "Solicitar reembolso",
     "waitingPayment": "Esperando confirmación de pago",
     "refundConfirm": "¿Estás seguro de solicitar el reembolso de esta reserva?",
-    "refundRequested": "Reembolso solicitado / aplicado."
+    "refundRequested": "Reembolso solicitado / aplicado.",
+    "loading": "Cargando...",
+    "all": "Todas",
+    "pending": "Pendientes",
+    "confirmed": "Confirmadas",
+    "refunded": "Reembolsadas",
+    "exploreProjects": "Explorar proyectos",
+    "viewProject": "Ver proyecto",
+    "status": {
+      "pending": "Pendiente",
+      "confirmed": "Confirmada",
+      "refunded": "Reembolsada",
+      "assigned": "Asignada"
+    },
+    "support": {
+      "title": "Soporte y ayuda",
+      "description": "¿Tienes preguntas sobre tus reservas? Visita nuestra comunidad o consulta la documentación.",
+      "community": "Comunidad",
+      "documentation": "Documentación"
+    }
   },
   "dev": {
     "title": "Panel Desarrollador",
@@ -651,9 +701,13 @@
       "review": "En revisión",
       "published": "Publicados",
       "presale": "Proyectos preventa",
-      "sale": "En venta"
+      "sale": "En venta",
+      "totalReservations": "Total reservas",
+      "confirmed": "Confirmadas",
+      "pending": "Pendientes"
     },
     "projects": {
+      "title": "Proyectos",
       "subtitle": "Administra estados, rondas y alista tus campañas para automatización.",
       "automationReady": "Listo para automatizaciones",
       "availability": "{status, select, available{Disponible} reserved{Reservado} sold{Vendido} coming_soon{Próximamente} other{Estado desconocido}}",
@@ -662,11 +716,31 @@
       "stage": "Etapa",
       "deposit": "Depósito"
     },
+    "loading": "Cargando...",
     "noProjects": "No hay proyectos.",
     "noProjectsFiltered": "No hay proyectos con estado \"{status}\".",
     "created": "Creado",
     "publish": "Publicar",
     "publishing": "Publicando...",
+    "description": "Gestiona proyectos, reservas y configuración del sistema",
+    "newProject": "Nuevo Proyecto",
+    "recentProjects": "Proyectos Recientes",
+    "viewAll": "Ver todos",
+    "view": "Ver",
+    "edit": "Editar",
+    "status": {
+      "draft": "Borrador",
+      "review": "En revisión",
+      "published": "Publicado"
+    },
+    "quickLinks": {
+      "projects": "Proyectos",
+      "projectsDescription": "Gestiona todos los proyectos y su estado",
+      "reservations": "Reservas",
+      "reservationsDescription": "Revisa y gestiona todas las reservas",
+      "createProject": "Crear Proyecto",
+      "createProjectDescription": "Agrega un nuevo proyecto al sistema"
+    },
     "unpublish": "Despublicar",
     "updating": "Actualizando...",
     "backToDraft": "Volver a borrador",
@@ -888,6 +962,23 @@
     "title": "Página no encontrada",
     "message": "Lo sentimos, la página que buscas no existe.",
     "backHome": "Volver al inicio"
+  },
+  "reservation": {
+    "title": "Reservar en {projectName}",
+    "subtitle": "Selecciona el número de slots que deseas reservar",
+    "project": "Proyecto",
+    "depositPerSlot": "Depósito por slot",
+    "deadline": "Fecha límite",
+    "selectSlots": "Número de slots",
+    "maxSlots": "Máximo {max} slots por persona",
+    "total": "Total a pagar",
+    "totalDescription": "{slots} slots × {amount}",
+    "cancel": "Cancelar",
+    "confirmReservation": "Confirmar reserva",
+    "processing": "Procesando...",
+    "loading": "Cargando...",
+    "projectNotFound": "Proyecto no encontrado",
+    "backToProjects": "Volver a proyectos"
   }
 }
 

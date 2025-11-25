@@ -466,6 +466,43 @@ export const signInWithOtp = async (
   }
 };
 
+/**
+ * Registra o inicia sesión con OTP, incluyendo metadata de nombre y teléfono
+ */
+export const signInOrSignUp = async ({
+  fullName,
+  email,
+  phone
+}: {
+  fullName: string;
+  email: string;
+  phone: string;
+}): Promise<void> => {
+  const client = getSupabaseBrowserClient();
+  
+  // Obtener URL base para el redirect
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+  const redirectTo = `${siteUrl}/auth/callback`;
+
+  const { error } = await client.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: redirectTo,
+      shouldCreateUser: true,
+      data: {
+        full_name: fullName,
+        phone: phone,
+        name: fullName
+      }
+    }
+  });
+
+  if (error) {
+    throw error;
+  }
+};
+
 export const signInWithOAuth = async (
   provider: Provider,
   options?: { redirectTo?: string; scopes?: string }

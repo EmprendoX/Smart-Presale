@@ -54,6 +54,21 @@
     }
   },
   "auth": {
+    "login": {
+      "title": "Sign in / Sign up",
+      "subtitle": "Enter your information to receive an access code by email",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "e.g. John Doe",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+1 555 123 4567",
+      "sendCode": "Send access code",
+      "sending": "Sending...",
+      "successMessage": "Access code sent!",
+      "checkEmail": "Check your email to continue with access.",
+      "sendAnother": "Send another code"
+    },
     "signUp": {
       "title": "Create your Smart Presale account",
       "subtitle": "Get a secure magic link or continue with your favourite network.",
@@ -244,6 +259,21 @@
     }
   },
   "project": {
+    "gallery": "Gallery",
+    "video": "Promotional Video",
+    "description": "Description",
+    "additionalInfo": "Additional Information",
+    "attributes": "Amenities",
+    "progress": {
+      "label": "Presale Progress",
+      "confirmed": "{confirmed} of {total} reservations confirmed",
+      "deadline": "Deadline",
+      "depositPerSlot": "Deposit per slot"
+    },
+    "reserve": {
+      "description": "Reserve your spot in this presale",
+      "button": "Reserve Now"
+    },
     "labels": {
       "presale": "Presale",
       "sale": "On market"
@@ -450,6 +480,7 @@
   },
   "dashboard": {
     "title": "My Reservations",
+    "subtitle": "Manage and review all your presale reservations",
     "filters": {
       "all": "All",
       "pending": "Pending",
@@ -473,7 +504,26 @@
     "requestRefund": "Request refund",
     "waitingPayment": "Waiting for payment confirmation",
     "refundConfirm": "Are you sure you want to request a refund for this reservation?",
-    "refundRequested": "Refund requested / applied."
+    "refundRequested": "Refund requested / applied.",
+    "loading": "Loading...",
+    "all": "All",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "refunded": "Refunded",
+    "exploreProjects": "Explore projects",
+    "viewProject": "View project",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "refunded": "Refunded",
+      "assigned": "Assigned"
+    },
+    "support": {
+      "title": "Support and help",
+      "description": "Have questions about your reservations? Visit our community or check the documentation.",
+      "community": "Community",
+      "documentation": "Documentation"
+    }
   },
   "dev": {
     "title": "Developer Panel",
@@ -654,6 +704,7 @@
       "sale": "For sale"
     },
     "projects": {
+      "title": "Projects",
       "subtitle": "Control publishing, rounds and automation readiness for each property.",
       "automationReady": "Automation ready",
       "availability": "{status, select, available{Available} reserved{Reserved} sold{Sold} coming_soon{Coming soon} other{Unknown}}",
@@ -662,11 +713,31 @@
       "stage": "Stage",
       "deposit": "Deposit"
     },
+    "loading": "Loading...",
     "noProjects": "No projects.",
     "noProjectsFiltered": "No projects with status \"{status}\".",
     "created": "Created",
     "publish": "Publish",
     "publishing": "Publishing...",
+    "description": "Manage projects, reservations and system configuration",
+    "newProject": "New Project",
+    "recentProjects": "Recent Projects",
+    "viewAll": "View all",
+    "view": "View",
+    "edit": "Edit",
+    "status": {
+      "draft": "Draft",
+      "review": "Under review",
+      "published": "Published"
+    },
+    "quickLinks": {
+      "projects": "Projects",
+      "projectsDescription": "Manage all projects and their status",
+      "reservations": "Reservations",
+      "reservationsDescription": "Review and manage all reservations",
+      "createProject": "Create Project",
+      "createProjectDescription": "Add a new project to the system"
+    },
     "unpublish": "Unpublish",
     "updating": "Updating...",
     "backToDraft": "Back to draft",
@@ -888,6 +959,23 @@
     "title": "Page not found",
     "message": "Sorry, the page you are looking for does not exist.",
     "backHome": "Back to home"
+  },
+  "reservation": {
+    "title": "Reserve in {projectName}",
+    "subtitle": "Select the number of slots you want to reserve",
+    "project": "Project",
+    "depositPerSlot": "Deposit per slot",
+    "deadline": "Deadline",
+    "selectSlots": "Number of slots",
+    "maxSlots": "Maximum {max} slots per person",
+    "total": "Total to pay",
+    "totalDescription": "{slots} slots × {amount}",
+    "cancel": "Cancel",
+    "confirmReservation": "Confirm reservation",
+    "processing": "Processing...",
+    "loading": "Loading...",
+    "projectNotFound": "Project not found",
+    "backToProjects": "Back to projects"
   }
 }
 

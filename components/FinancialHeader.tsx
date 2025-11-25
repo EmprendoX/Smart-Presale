@@ -54,8 +54,8 @@ export default function FinancialHeader({
           <div className="text-xs text-[color:var(--text-muted)]">{ticker || "SPS:UNLISTED"}</div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold text-[color:var(--text-strong)]">{name}</h1>
-            <Badge color={listingType === "presale" ? "green" : "neutral"}>
-              {listingType === "presale" ? t("labels.presale") : t("labels.sale")}
+            <Badge color="green">
+              {t("labels.presale")}
             </Badge>
             {stage && <Badge color="neutral">{stage}</Badge>}
           </div>

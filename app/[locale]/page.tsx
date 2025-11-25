@@ -97,7 +97,6 @@ export default async function HomePage({ params }: { params: Params }) {
   const t = await getTranslations({ locale, namespace: "home" });
   const projects = await listPublishedProjects();
 
-  const immediateListings = projects.filter(project => project.listingType === "sale");
   const presaleListings = projects.filter(project => project.listingType === "presale");
 
   return (
@@ -110,14 +109,8 @@ export default async function HomePage({ params }: { params: Params }) {
           </div>
           <div className="flex flex-wrap gap-4">
             <Link
-              href="/projects#sale"
-              className="inline-flex items-center rounded-lg bg-[color:var(--brand-primary)] px-6 py-3 text-sm font-semibold text-[color:var(--text-inverse)] shadow-md hover:bg-[color:var(--brand-primary-hover)] hover:shadow-lg transition-all duration-200"
-            >
-              {t("hero.ctaImmediate")}
-            </Link>
-            <Link
               href="/projects#presale"
-              className="inline-flex items-center rounded-lg border-2 border-[color:var(--brand-primary)] bg-[color:var(--bg-surface)] px-6 py-3 text-sm font-semibold text-[color:var(--brand-primary)] hover:bg-[color:var(--bg-soft)] hover:shadow-md transition-all duration-200"
+              className="inline-flex items-center rounded-lg bg-[color:var(--brand-primary)] px-6 py-3 text-sm font-semibold text-[color:var(--text-inverse)] shadow-md hover:bg-[color:var(--brand-primary-hover)] hover:shadow-lg transition-all duration-200"
             >
               {t("hero.ctaPresale")}
             </Link>
@@ -130,18 +123,7 @@ export default async function HomePage({ params }: { params: Params }) {
           <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("shortcuts.title")}</h2>
           <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.subtitle")}</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="min-w-0">
-            <Card className="border-[color:var(--line)] shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="space-y-3 p-6">
-                <h3 className="text-lg font-semibold text-[color:var(--text-strong)]">{t("shortcuts.immediate.title")}</h3>
-                <p className="text-sm text-[color:var(--text-muted)]">{t("shortcuts.immediate.description")}</p>
-                <Link href="/projects#sale" className="inline-flex text-sm font-medium text-[color:var(--brand-primary)] hover:text-[color:var(--brand-primary-hover)] hover:underline transition-colors">
-                  {t("shortcuts.immediate.cta")}
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="grid gap-4 md:grid-cols-1">
           <div className="min-w-0">
             <Card className="border-[color:var(--line)] shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="space-y-3 p-6">
@@ -171,28 +153,6 @@ export default async function HomePage({ params }: { params: Params }) {
         </form>
       </section>
 
-      <section id="sale" className="space-y-4">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("sections.immediateHeading")}</h2>
-          <p className="text-sm text-[color:var(--text-muted)]">{t("sections.immediateDescription")}</p>
-        </div>
-        {immediateListings.length === 0 ? (
-          <Card className="border-[color:var(--line)]">
-            <CardContent className="py-8 text-center text-sm text-[color:var(--text-muted)]">
-              {t("sections.immediateEmpty")}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {immediateListings.map(project => (
-              <div key={project.id} className="min-w-0">
-                <ListingCard project={project} locale={locale} t={t} />
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
       <section id="presale" className="space-y-4">
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("sections.presaleHeading")}</h2>
@@ -218,12 +178,6 @@ export default async function HomePage({ params }: { params: Params }) {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">{t("quickLinks.title")}</h2>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Link
-            href="/projects#sale"
-            className="inline-flex items-center justify-center rounded-lg border border-[color:var(--line)] px-4 py-2 text-sm font-medium text-[color:var(--brand-primary-hover)] shadow-sm hover:bg-[color:var(--bg-soft)] hover:shadow-md transition-all"
-          >
-            {t("quickLinks.immediate")}
-          </Link>
           <Link
             href="/projects#presale"
             className="inline-flex items-center justify-center rounded-lg border border-[color:var(--line)] px-4 py-2 text-sm font-medium text-[color:var(--brand-primary-hover)] shadow-sm hover:bg-[color:var(--bg-soft)] hover:shadow-md transition-all"

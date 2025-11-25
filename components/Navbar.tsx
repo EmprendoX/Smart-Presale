@@ -6,36 +6,21 @@ import { useEffect, useState } from "react";
 import { Select } from "./ui/Select";
 import { Button } from "./ui/Button";
 import { useTenant } from "@/providers/TenantProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const { tenant, settings } = useTenant();
+  const { user, signOut } = useAuth();
 
   const brandName = tenant?.name ?? "Smart Pre-Sale";
   const brandLogo = settings?.logoUrl ?? settings?.darkLogoUrl ?? settings?.squareLogoUrl ?? null;
   
-  // Hooks de next-intl con manejo de errores
-  let t: ReturnType<typeof useTranslations>;
-  let locale: string;
-  let router: ReturnType<typeof useRouter>;
-  let pathname: string;
-  
-  try {
-    t = useTranslations("nav");
-    locale = useLocale();
-    router = useRouter();
-    pathname = usePathname();
-  } catch (error) {
-    // Fallback si los hooks fallan
-    console.error("Error en hooks de next-intl:", error);
-    return (
-      <header className="border-b">
-        <div className="container flex items-center justify-between py-3">
-          <div className="text-xl font-semibold">Smart <span className="text-brand">Pre‑Sale</span></div>
-        </div>
-      </header>
-    );
-  }
+  // Hooks de next-intl (siempre deben llamarse, no condicionalmente)
+  const t = useTranslations("nav");
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Solo usar localStorage después de montar (cliente)
   useEffect(() => {
@@ -83,20 +68,33 @@ export function Navbar() {
               <span className="leading-none">{brandName}</span>
             )}
           </Link>
-          <nav className="hidden md:flex items-center gap-4 text-sm flex-shrink-0">
-            <Link href="/" className="hover:underline whitespace-nowrap">{t("projects")}</Link>
-            <Link href="/community" className="hover:underline whitespace-nowrap">{t("communities")}</Link>
-            <Link href="/p/how-it-works" className="hover:underline whitespace-nowrap">{t("howItWorks")}</Link>
-          </nav>
+              <nav className="hidden md:flex items-center gap-4 text-sm flex-shrink-0">
+                <Link href="/" className="hover:underline whitespace-nowrap">{t("projects")}</Link>
+                <Link href="/community" className="hover:underline whitespace-nowrap">{t("communities")}</Link>
+                <Link href="/p/how-it-works" className="hover:underline whitespace-nowrap">{t("howItWorks")}</Link>
+                <Link href="/dashboard" className="hover:underline whitespace-nowrap">{t("myReservations")}</Link>
+                <Link href="/admin" className="hover:underline whitespace-nowrap font-semibold text-[color:var(--brand-primary)]">{t("admin")}</Link>
+              </nav>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
           <Select value={locale} onChange={e => changeLanguage(e.target.value)} aria-label={t("language")}>
             <option value="es">{t("spanish")}</option>
             <option value="en">{t("english")}</option>
           </Select>
-          <Button variant="secondary" asChild>
-            <Link href="/sign-up">{t("signIn")}</Link>
-          </Button>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[color:var(--text-muted)] hidden sm:inline">
+                {user.fullName || user.email}
+              </span>
+              <Button variant="secondary" onClick={() => signOut()}>
+                {t("signOut") || "Salir"}
+              </Button>
+            </div>
+          ) : (
+            <Button variant="secondary" asChild>
+              <Link href="/auth/login">{t("signIn")}</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>

@@ -93,9 +93,6 @@ export default async function ProjectPage({ params }: { params: Params }) {
       list.push({ label: t("project.kpis.totalUnits"), value: String(project.totalUnits) });
       list.push({ label: t("project.kpis.available"), value: String(Math.max(availableUnits, 0)) });
     }
-    if (project.listingType === "sale" && project.askingPrice) {
-      list.push({ label: t("project.propertyCost"), value: fmtCurrency(project.askingPrice, project.currency, locale) });
-    }
     if (round?.groupSlots) {
       list.push({ label: t("project.kpis.presaleGroup"), value: String(round.groupSlots) });
     }
@@ -111,7 +108,7 @@ export default async function ProjectPage({ params }: { params: Params }) {
 
   const structuredData = {
     '@context': 'https://schema.org',
-    '@type': project.listingType === 'presale' ? 'PreSale' : 'Offer',
+    '@type': 'PreSale',
     name: project.name,
     description: project.description,
     image: project.images,
@@ -120,11 +117,6 @@ export default async function ProjectPage({ params }: { params: Params }) {
       '@type': 'Organization',
       name: 'Smart Presale X'
     },
-    offers: project.listingType === 'sale' && project.askingPrice ? {
-      '@type': 'Offer',
-      price: project.askingPrice,
-      priceCurrency: project.currency
-    } : undefined
   };
 
   const tabOverview = (
@@ -316,12 +308,12 @@ export default async function ProjectPage({ params }: { params: Params }) {
     </div>
   );
 
-  const tabSecondary = project.listingType === "presale" && round ? (
+  const tabSecondary = round ? (
     <SecondaryMarketPanel projectId={project.id} roundId={round.id} currency={project.currency} />
   ) : (
     <Card>
       <CardContent className="py-8 text-center text-neutral-600">
-        {project.listingType === "sale" ? t("project.secondary.saleMessage") : t("project.secondary.noRound")}
+        {t("project.secondary.noRound")}
       </CardContent>
     </Card>
   );
@@ -359,7 +351,7 @@ export default async function ProjectPage({ params }: { params: Params }) {
         availability={availability}
         deadlineAt={round?.deadlineAt}
         percent={summary?.percent}
-        showProgress={project.listingType === "presale" && !!round}
+        showProgress={!!round}
         kpis={kpis}
         status={round?.status}
       />

@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 const listingLabel = (
   type: ListingType,
   t: (key: string, values?: Record<string, any>) => string
-) => (type === "presale" ? t("labels.presale") : t("labels.sale"));
+) => t("labels.presale");
 
 const communityCTA = (
   community: Community,
@@ -126,7 +126,7 @@ const renderProjectCard = (
               <h3 className="text-lg font-semibold">{project.name}</h3>
               <p className="text-sm text-[color:var(--text-muted)]">{project.city}, {project.country}</p>
             </div>
-            <Badge color={isPresale ? "green" : "neutral"}>{listingLabel(project.listingType, t)}</Badge>
+            <Badge color="green">{listingLabel(project.listingType, t)}</Badge>
           </div>
 
           <p className="text-sm text-neutral-700 line-clamp-2">{project.description}</p>
@@ -192,7 +192,6 @@ export default async function ProjectsPage({ params }: { params: Params }) {
   );
 
   const presaleProjects = projectsWithData.filter(p => p.project.listingType === "presale");
-  const saleProjects = projectsWithData.filter(p => p.project.listingType === "sale");
   const heroProject = projectsWithData.find(p => p.project.featured) ?? projectsWithData[0];
   const globalCommunity = communities.find(c => c.scope === "global");
   const campaignCommunities = communities.filter(c => c.scope === "campaign").slice(0, 3);
@@ -205,7 +204,7 @@ export default async function ProjectsPage({ params }: { params: Params }) {
     name: t("seo.title"),
     description: t("seo.description"),
     hasPart: projectsWithData.map(item => ({
-      '@type': item.project.listingType === 'presale' ? 'PreSale' : 'Offer',
+      '@type': 'PreSale',
       name: item.project.name,
       url: `https://smart-presale.example/${locale}/p/${item.project.slug}`,
       image: item.project.images?.[0],
@@ -268,7 +267,6 @@ export default async function ProjectsPage({ params }: { params: Params }) {
           <Input placeholder={t("search.cityPlaceholder") as string} />
           <Select defaultValue="presale">
             <option value="presale">{t("labels.presale")}</option>
-            <option value="sale">{t("labels.sale")}</option>
           </Select>
           <Select defaultValue="any">
             <option value="any">{t("search.priceAny")}</option>
@@ -294,28 +292,6 @@ export default async function ProjectsPage({ params }: { params: Params }) {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {presaleProjects.map(item => (
-              <div key={item.project.id} className="min-w-0">
-                {renderProjectCard(item, locale, t, `/p/${item.project.slug}`)}
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Sale inventory */}
-      <section id="sale" className="space-y-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold">{t("sections.saleHeading")}</h2>
-            <p className="text-sm text-[color:var(--text-muted)]">{t("sections.saleSubheading")}</p>
-          </div>
-          <Link href="/community" className="text-sm font-medium text-brand hover:underline">{t("sections.viewAll")}</Link>
-        </div>
-        {saleProjects.length === 0 ? (
-          <Card><CardContent className="py-8 text-center text-[color:var(--text-muted)]">{t("sections.noSale")}</CardContent></Card>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {saleProjects.map(item => (
               <div key={item.project.id} className="min-w-0">
                 {renderProjectCard(item, locale, t, `/p/${item.project.slug}`)}
               </div>

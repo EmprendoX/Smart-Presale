@@ -19,6 +19,25 @@ export const api = {
   getProject: async (idOrSlug: string): Promise<ApiResult<{ project: Project; round: Round | null }>> =>
     fetch(`/api/projects/${idOrSlug}`, { cache: "no-store", credentials: "include" }).then(json),
 
+  getProjectById: async (idOrSlug: string): Promise<ApiResult<Project>> =>
+    fetch(`/api/projects/${idOrSlug}`, { cache: "no-store", credentials: "include" }).then(json),
+
+  createProject: async (input: Partial<Project>): Promise<ApiResult<Project>> =>
+    fetch("/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      credentials: "include"
+    }).then(json),
+
+  updateProject: async (id: string, input: Partial<Project>): Promise<ApiResult<Project>> =>
+    fetch(`/api/projects/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      credentials: "include"
+    }).then(json),
+
   publishProject: async (id: string): Promise<ApiResult<Project>> =>
     fetch(`/api/projects/${id}`, { 
       method: "PATCH", 
