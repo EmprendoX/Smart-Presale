@@ -7,7 +7,6 @@ import { useToast } from "@/components/ui/Toast";
 import { ProjectForm } from "@/components/admin/ProjectForm";
 import { api } from "@/lib/api";
 import { Project } from "@/lib/types";
-import { db } from "@/lib/config";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -25,13 +24,11 @@ export default function NewProjectPage() {
 
   const loadData = async () => {
     try {
-      const [devsResult, agentsResult] = await Promise.all([
-        db.getDevelopers(),
-        db.getAgents()
-      ]);
-      
-      setDevelopers(devsResult.map(d => ({ id: d.id, company: d.company || d.name || d.id })));
-      setAgents(agentsResult.map(a => ({ id: a.id, name: a.name || a.id })));
+      const meta = await api.getAdminMetadata();
+      if (!meta.ok || !meta.data) throw new Error("No se pudo cargar catálogos");
+
+      setDevelopers(meta.data.developers.map(d => ({ id: d.id, company: d.company || d.name || d.id })));
+      setAgents(meta.data.agents.map(a => ({ id: a.id, name: a.name || a.id })));
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {

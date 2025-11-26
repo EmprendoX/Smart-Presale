@@ -7,7 +7,6 @@ import { useToast } from "@/components/ui/Toast";
 import { ProjectForm } from "@/components/admin/ProjectForm";
 import { api } from "@/lib/api";
 import { Project } from "@/lib/types";
-import { db } from "@/lib/config";
 import { Card, CardContent } from "@/components/ui/Card";
 
 type Params = { locale: string; slug: string };
@@ -34,26 +33,20 @@ export default function EditProjectPage({ params }: { params: Params }) {
     setError(null);
     
     try {
-      // Obtener proyecto por slug
-      const projectBySlug = await db.getProjectBySlug(slug);
-      if (!projectBySlug) {
+      const projectResult = await api.getProjectById(slug);
+      if (!projectResult.ok || !projectResult.data) {
         setError("Proyecto no encontrado");
         setLoading(false);
         return;
       }
-      const projectResult = { ok: true, data: projectBySlug };
-      
-      const [devsResult, agentsResult] = await Promise.all([
-        db.getDevelopers(),
-        db.getAgents()
-      ]);
 
-      if (projectResult.ok && projectResult.data) {
-        setProject(projectResult.data);
-      }
+      setProject(projectResult.data);
 
-      setDevelopers(devsResult.map(d => ({ id: d.id, company: d.company || d.name || d.id })));
-      setAgents(agentsResult.map(a => ({ id: a.id, name: a.name || a.id })));
+      const meta = await api.getAdminMetadata();
+      if (!meta.ok || !meta.data) throw new Error("No se pudo cargar catálogos");
+
+      setDevelopers(meta.data.developers.map(d => ({ id: d.id, company: d.company || d.name || d.id })));
+      setAgents(meta.data.agents.map(a => ({ id: a.id, name: a.name || a.id })));
     } catch (err: any) {
       setError(err.message || "Error al cargar datos");
     } finally {

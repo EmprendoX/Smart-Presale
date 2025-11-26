@@ -20,7 +20,14 @@ export const api = {
     fetch(`/api/projects/${idOrSlug}`, { cache: "no-store", credentials: "include" }).then(json),
 
   getProjectById: async (idOrSlug: string): Promise<ApiResult<Project>> =>
-    fetch(`/api/projects/${idOrSlug}`, { cache: "no-store", credentials: "include" }).then(json),
+    fetch(`/api/projects/${idOrSlug}`, { cache: "no-store", credentials: "include" })
+      .then(async (res) => {
+        const payload = await res.json();
+        if (payload?.ok && payload.data?.project) {
+          return { ok: true, data: payload.data.project } as ApiResult<Project>;
+        }
+        return { ok: false, error: payload?.error || "No se pudo obtener el proyecto" } as ApiResult<Project>;
+      }),
 
   createProject: async (input: Partial<Project>): Promise<ApiResult<Project>> =>
     fetch("/api/projects", {
@@ -29,6 +36,10 @@ export const api = {
       body: JSON.stringify(input),
       credentials: "include"
     }).then(json),
+
+  getAdminMetadata: async (): Promise<
+    ApiResult<{ developers: Array<{ id: string; company: string }>; agents: Array<{ id: string; name: string }> }>
+  > => fetch("/api/admin/meta", { cache: "no-store", credentials: "include" }).then(json),
 
   updateProject: async (id: string, input: Partial<Project>): Promise<ApiResult<Project>> =>
     fetch(`/api/projects/${id}`, {

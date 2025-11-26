@@ -1,4 +1,7 @@
 import type { DatabaseService } from './db';
+import fs from 'fs';
+import path from 'path';
+
 import type {
   User,
   Developer,
@@ -22,6 +25,7 @@ import type {
 
 const STORAGE_KEY = 'sps_data';
 const DEFAULT_TENANT_ID = 'tenant_default';
+const STORAGE_FILE = path.resolve(process.cwd(), '.sps-mock-data.json');
 
 // Función helper para generar UUIDs de forma segura
 function generateUUID(): string {
@@ -36,8 +40,7 @@ function generateUUID(): string {
   });
 }
 
-// Estado en memoria (compartido entre todas las instancias)
-let memoryStore: {
+type MemoryStore = {
   users: Map<string, User>;
   developers: Map<string, Developer>;
   projects: Map<string, Project>;
@@ -56,7 +59,15 @@ let memoryStore: {
   tenants: Map<string, Tenant>;
   tenantSettings: Map<string, TenantSettings>;
   clients: Map<string, Client>;
-} = {
+};
+
+// Estado en memoria (compartido entre todas las instancias y recargas calientes)
+const globalStore = globalThis as typeof globalThis & {
+  __SPS_MEMORY_STORE__?: MemoryStore;
+  __SPS_MEMORY_INITIALIZED__?: boolean;
+};
+
+let memoryStore: MemoryStore = globalStore.__SPS_MEMORY_STORE__ || {
   users: new Map(),
   developers: new Map(),
   projects: new Map(),
@@ -77,31 +88,42 @@ let memoryStore: {
   clients: new Map()
 };
 
+// Persistir la referencia en el ámbito global para evitar reinicios del estado entre rutas/API
+globalStore.__SPS_MEMORY_STORE__ = memoryStore;
+
 // Función para guardar en localStorage (solo en cliente)
 function saveToStorage() {
-  if (typeof window === 'undefined') return;
-  
+  const data = {
+    users: Array.from(memoryStore.users.values()),
+    developers: Array.from(memoryStore.developers.values()),
+    projects: Array.from(memoryStore.projects.values()),
+    rounds: Array.from(memoryStore.rounds.values()),
+    reservations: Array.from(memoryStore.reservations.values()),
+    transactions: Array.from(memoryStore.transactions.values()),
+    paymentWebhooks: Array.from(memoryStore.paymentWebhooks.values()),
+    research: Array.from(memoryStore.research.values()),
+    priceHistory: Object.fromEntries(memoryStore.priceHistory),
+    listings: Array.from(memoryStore.listings.values()),
+    trades: Array.from(memoryStore.trades.values()),
+    documents: Array.from(memoryStore.documents.values()),
+    communities: Array.from(memoryStore.communities.values()),
+    automations: Array.from(memoryStore.automations.values()),
+    agents: Array.from(memoryStore.agents.values()),
+    tenants: Array.from(memoryStore.tenants.values()),
+    tenantSettings: Array.from(memoryStore.tenantSettings.values()),
+    clients: Array.from(memoryStore.clients.values())
+  };
+
+  if (typeof window === 'undefined') {
+    try {
+      fs.writeFileSync(STORAGE_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (error) {
+      console.warn('[MockDbService] Failed to save to disk:', error);
+    }
+    return;
+  }
+
   try {
-    const data = {
-      users: Array.from(memoryStore.users.values()),
-      developers: Array.from(memoryStore.developers.values()),
-      projects: Array.from(memoryStore.projects.values()),
-      rounds: Array.from(memoryStore.rounds.values()),
-      reservations: Array.from(memoryStore.reservations.values()),
-      transactions: Array.from(memoryStore.transactions.values()),
-      paymentWebhooks: Array.from(memoryStore.paymentWebhooks.values()),
-      research: Array.from(memoryStore.research.values()),
-      priceHistory: Object.fromEntries(memoryStore.priceHistory),
-      listings: Array.from(memoryStore.listings.values()),
-      trades: Array.from(memoryStore.trades.values()),
-      documents: Array.from(memoryStore.documents.values()),
-      communities: Array.from(memoryStore.communities.values()),
-      automations: Array.from(memoryStore.automations.values()),
-      agents: Array.from(memoryStore.agents.values()),
-      tenants: Array.from(memoryStore.tenants.values()),
-      tenantSettings: Array.from(memoryStore.tenantSettings.values()),
-      clients: Array.from(memoryStore.clients.values())
-    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
     console.warn('[MockDbService] Failed to save to localStorage:', error);
@@ -141,6 +163,41 @@ function loadFromStorage() {
     return true;
   } catch (error) {
     console.warn('[MockDbService] Failed to load from localStorage:', error);
+    return false;
+  }
+}
+
+// Función para cargar desde archivo (solo en servidor)
+function loadFromDisk() {
+  if (typeof window !== 'undefined') return false;
+
+  try {
+    if (!fs.existsSync(STORAGE_FILE)) return false;
+    const raw = fs.readFileSync(STORAGE_FILE, 'utf-8');
+    const data = JSON.parse(raw);
+
+    memoryStore.users = new Map(data.users?.map((u: User) => [u.id, u]) || []);
+    memoryStore.developers = new Map(data.developers?.map((d: Developer) => [d.id, d]) || []);
+    memoryStore.projects = new Map(data.projects?.map((p: Project) => [p.id, p]) || []);
+    memoryStore.rounds = new Map(data.rounds?.map((r: Round) => [r.id, r]) || []);
+    memoryStore.reservations = new Map(data.reservations?.map((r: Reservation) => [r.id, r]) || []);
+    memoryStore.transactions = new Map(data.transactions?.map((t: Transaction) => [t.id, t]) || []);
+    memoryStore.paymentWebhooks = new Map(data.paymentWebhooks?.map((w: PaymentWebhook) => [w.id, w]) || []);
+    memoryStore.research = new Map(data.research?.map((r: ResearchItem) => [r.id, r]) || []);
+    memoryStore.priceHistory = new Map(Object.entries(data.priceHistory || {}));
+    memoryStore.listings = new Map(data.listings?.map((l: SecondaryListing) => [l.id, l]) || []);
+    memoryStore.trades = new Map(data.trades?.map((t: Trade) => [t.id, t]) || []);
+    memoryStore.documents = new Map(data.documents?.map((d: ProjectDocument) => [d.id, d]) || []);
+    memoryStore.communities = new Map(data.communities?.map((c: Community) => [c.id, c]) || []);
+    memoryStore.automations = new Map(data.automations?.map((a: AutomationWorkflow) => [a.id, a]) || []);
+    memoryStore.agents = new Map(data.agents?.map((a: IntelligentAgent) => [a.id, a]) || []);
+    memoryStore.tenants = new Map(data.tenants?.map((t: Tenant) => [t.id, t]) || []);
+    memoryStore.tenantSettings = new Map(data.tenantSettings?.map((s: TenantSettings) => [s.tenantId, s]) || []);
+    memoryStore.clients = new Map(data.clients?.map((c: Client) => [c.id, c]) || []);
+
+    return true;
+  } catch (error) {
+    console.warn('[MockDbService] Failed to load from disk:', error);
     return false;
   }
 }
@@ -512,11 +569,11 @@ function initializeDefaultData() {
 }
 
 // Inicialización diferida - se ejecuta cuando se necesita
-let initialized = false;
+let initialized = globalStore.__SPS_MEMORY_INITIALIZED__ ?? false;
 
 function ensureInitialized() {
   if (initialized) return;
-  
+
   if (typeof window !== 'undefined') {
     // En cliente: intentar cargar desde localStorage primero
     const loaded = loadFromStorage();
@@ -524,13 +581,15 @@ function ensureInitialized() {
       initializeDefaultData();
     }
   } else {
-    // En servidor: solo inicializar si está vacío
-    if (memoryStore.projects.size === 0) {
+    // En servidor: intentar cargar desde disco, de lo contrario inicializar por defecto
+    const loadedFromDisk = loadFromDisk();
+    if (!loadedFromDisk && memoryStore.projects.size === 0) {
       initializeDefaultData();
     }
   }
-  
+
   initialized = true;
+  globalStore.__SPS_MEMORY_INITIALIZED__ = true;
 }
 
 export class MockDbService implements DatabaseService {
