@@ -36,8 +36,7 @@ function generateUUID(): string {
   });
 }
 
-// Estado en memoria (compartido entre todas las instancias)
-let memoryStore: {
+type MemoryStore = {
   users: Map<string, User>;
   developers: Map<string, Developer>;
   projects: Map<string, Project>;
@@ -56,7 +55,15 @@ let memoryStore: {
   tenants: Map<string, Tenant>;
   tenantSettings: Map<string, TenantSettings>;
   clients: Map<string, Client>;
-} = {
+};
+
+// Estado en memoria (compartido entre todas las instancias y recargas calientes)
+const globalStore = globalThis as typeof globalThis & {
+  __SPS_MEMORY_STORE__?: MemoryStore;
+  __SPS_MEMORY_INITIALIZED__?: boolean;
+};
+
+let memoryStore: MemoryStore = globalStore.__SPS_MEMORY_STORE__ || {
   users: new Map(),
   developers: new Map(),
   projects: new Map(),
@@ -76,6 +83,9 @@ let memoryStore: {
   tenantSettings: new Map(),
   clients: new Map()
 };
+
+// Persistir la referencia en el ámbito global para evitar reinicios del estado entre rutas/API
+globalStore.__SPS_MEMORY_STORE__ = memoryStore;
 
 // Función para guardar en localStorage (solo en cliente)
 function saveToStorage() {
@@ -512,7 +522,7 @@ function initializeDefaultData() {
 }
 
 // Inicialización diferida - se ejecuta cuando se necesita
-let initialized = false;
+let initialized = globalStore.__SPS_MEMORY_INITIALIZED__ ?? false;
 
 function ensureInitialized() {
   if (initialized) return;
@@ -529,8 +539,9 @@ function ensureInitialized() {
       initializeDefaultData();
     }
   }
-  
+
   initialized = true;
+  globalStore.__SPS_MEMORY_INITIALIZED__ = true;
 }
 
 export class MockDbService implements DatabaseService {
